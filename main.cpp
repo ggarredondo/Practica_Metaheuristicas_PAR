@@ -4,11 +4,17 @@
 
 std::vector<std::vector<int> > leer_const(std::ifstream archivo)
 {
+    std::vector<std::vector<int> > result;
     std::vector<int> aux;
-    std::string line;
-    while (archivo >> line) {
-        std::cout << line << std::endl;
+    std::string linea;
+    bool test = true;
+    while (archivo >> linea) {
+        if (test) {
+            std::cout << linea << std::endl;
+            test = false;
+        }
     }
+    return result;
 }
 
 int main() {
