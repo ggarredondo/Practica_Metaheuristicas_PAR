@@ -15,7 +15,7 @@ public:
         this->cluster = cluster;
     }
 
-    double distancia(const Punto& p) {
+    double distancia(const Punto& p) const {
         double result = 0;
         for (size_t i = 0; i < atributos.size(); ++i)
             result += (this->atributos[i] - p.atributos[i])*(this->atributos[i] - p.atributos[i]);
