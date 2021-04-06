@@ -2,20 +2,28 @@
 #include "algoritmos.h"
 
 int main() {
-    size_t seed = 1;
-    srand(seed);
-    double_matrix data = archivo_a_matriz<double>(std::ifstream("data/bupa_set.dat"));
 
-    std::vector<double> centroide = {1,1,1,1};
-    std::vector<double> test = {2,3,4,5};
-    std::vector<double> puntos = {2,3,4,3};
-    transform(centroide.begin(), centroide.end(), puntos.begin(), centroide.begin(), std::plus<int>());
-    std::list<size_t> lista = {1,2,3,4};
-    for (auto& i : lista)
-        std::cout << i << std::endl;
+    int_matrix m = { {1,-1,1,1},
+                     {-1,1,0,0},
+                     {1,0,1,0},
+                     {1,0,0,1} };
 
-    if (test==puntos)
-        std::cout << "yes" << std::endl;
-    for (auto &v : centroide)
-        std::cout << v << " ";
+    for (size_t i = 0; i < m.size(); ++i) {
+        for (size_t j = 0; j < m[i].size(); j++)
+            std::cout << m[i][j] <<" ";
+        std::cout << std::endl;
+    }
+    std::cout << std::endl;
+
+    R_matrix R = matriz_a_lista(m);
+
+    for (size_t i = 0; i < m.size(); ++i) {
+        for (auto &j : m[i])
+            std::cout << j <<" ";
+        std::cout << std::endl;
+    }
+
+    size_t sum = 0;
+    sum += false;
+    std::cout << sum << std::endl;
 }

@@ -32,25 +32,13 @@ std::vector<std::vector<T> > archivo_a_matriz(std::ifstream archivo)
     return datos;
 }
 
-struct R {
-    size_t i, j;
-    int r;
-    R() : i(0), j(0), r(0) {}
-    R(size_t i, size_t j, int r) : i(i), j(j), r(r) {}
-};
-typedef std::list<R> R_list;
+typedef std::vector<std::list<int> > R_matrix;
 
-R_list matriz_a_lista(int_matrix m) 
-{
-    R_list restricciones;
-    R rest;
-    for (size_t i = 0; i < m.size(); ++i) {
-        for (size_t j = i+1; j < m[i].size(); ++j) {
-            rest = R(i, j, m[i][j]);
-            restricciones.push_back(rest);
-        }
-    }
-    return restricciones;
+R_matrix matriz_a_lista(const int_matrix& m) {
+    R_matrix result;
+    for (auto& v : m)
+        result.push_back(std::list<int>(v.begin(), v.end()));
+    return result;
 }
 
 class cluster {
@@ -72,6 +60,10 @@ public:
             transform(centroide.begin(), centroide.end(), puntos[i].begin(), centroide.begin(), std::plus<double>());
         for (size_t i = 0; i < size; ++i)
             centroide[i] /= size;
+    }
+
+    inline bool operator==(const cluster& c) const {
+        return centroide == c.centroide;
     }
 };
 
