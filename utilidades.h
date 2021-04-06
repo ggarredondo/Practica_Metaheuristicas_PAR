@@ -2,8 +2,9 @@
 #define PRACTICA1_MH_PAR_UTILIDADES_H
 #include <vector>
 #include <list>
-#include <tuple>
 #include <fstream>
+#include <functional>
+#include <algorithm>
 
 typedef std::vector<std::vector<int> > int_matrix;
 typedef std::vector<std::vector<double> > double_matrix;
@@ -51,5 +52,27 @@ R_list matriz_a_lista(int_matrix m)
     }
     return restricciones;
 }
+
+class cluster {
+private:
+    std::vector<double> centroide;
+    double_matrix puntos;
+
+public:
+    cluster(std::vector<double>& c) : centroide(c) {}
+
+    inline void aniadir_punto(const std::vector<double>& punto) {
+        puntos.push_back(punto);
+    }
+
+    void actualizar_centroide() {
+        centroide = puntos[0];
+        size_t size = puntos.size();
+        for (size_t i = 1; i < size; ++i)
+            transform(centroide.begin(), centroide.end(), puntos[i].begin(), centroide.begin(), std::plus<double>());
+        for (size_t i = 0; i < size; ++i)
+            centroide[i] /= size;
+    }
+};
 
 #endif //PRACTICA1_MH_PAR_UTILIDADES_H
