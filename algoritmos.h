@@ -1,6 +1,7 @@
 #ifndef PRACTICA1_MH_PAR_ALGORITMOS_H
 #define PRACTICA1_MH_PAR_ALGORITMOS_H
 #include <random>
+#include <limits>
 #include "utilidades.h"
 
 // cj es igual al cluster al que pertenece xk y la restricción es cannot-link
@@ -25,12 +26,46 @@ std::vector<size_t> greedy_copkm(const double_matrix& X, const R_matrix& R, std:
     shuffle(vRSI.begin(), vRSI.end(), std::default_random_engine(seed));
     std::list<size_t> RSI(vRSI.begin(), vRSI.end());
 
-    do {
-        for (auto& i : RSI) {
-            
+    std::vector<int> C_ant;
+    std::list<size_t> asignaciones;
+    size_t inf, min, c_min;
+    double d_min, d;
+    do {   
+        C_ant = C;
+
+        for (auto& xi : RSI) {
+            d_min = DBL_MAX;
+            min = 65535;
+            asignaciones.clear();
+
+            for (size_t cj = 0; cj < clusters.size(); ++cj) {
+                inf = infeasibility(xi, cj, C, R);
+                if (inf < min) {
+                    asignaciones.clear();
+                    min = inf;
+                }
+                if (inf <= min)
+                    asignaciones.push_back(cj);
+            }
+
+            for (auto& cj : asignaciones) {
+                d = clusters[cj].distancia_centroide(X[xi]);
+                if (d < d_min) {
+                    d_min = d;
+                    c_min = cj;
+                }
+            }
+
+            clusters[c_min].aniadir_punto(X[xi]);
+            C[xi] = c_min;
         }
-    } while(true);
+
+        for (auto& ci : clusters)
+            ci.actualizar_centroide();
+
+    } while(C_ant != C);
     
+    return C;
 }
 
 #endif //PRACTICA1_MH_PAR_ALGORITMOS_H
