@@ -5,6 +5,7 @@
 #include <fstream>
 #include <functional>
 #include <algorithm>
+#include <cmath>
 
 typedef std::vector<std::vector<int> > int_matrix;
 typedef std::vector<std::vector<double> > double_matrix;
@@ -41,6 +42,13 @@ R_matrix matriz_a_lista(const int_matrix& m) {
     return result;
 }
 
+inline double distancia_euclidea(const std::vector<double>& a, const std::vector<double>& b) {
+    double result = 0;
+    for (size_t i = 0; i < a.size(); ++i)
+        result += (a[i]-b[i])*(a[i]-b[i]);
+    return sqrt(result);
+}
+
 class cluster {
 private:
     std::vector<double> centroide;
@@ -60,6 +68,10 @@ public:
             transform(centroide.begin(), centroide.end(), puntos[i].begin(), centroide.begin(), std::plus<double>());
         for (size_t i = 0; i < size; ++i)
             centroide[i] /= size;
+    }
+
+    inline double distancia_centroide(const std::vector<double>& punto) const {
+        return distancia_euclidea(centroide, punto);
     }
 
     inline bool operator==(const cluster& c) const {
