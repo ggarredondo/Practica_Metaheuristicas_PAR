@@ -1,10 +1,9 @@
 #include <iostream>
 #include "algoritmos.h"
 
-//      seeds
-// zoo: 2, 7
+// seeds to further test: 1617824198, 1617824607
 int main() {
-    size_t seed = time(NULL), k = 16;
+    size_t seed = 1617824607, k = 16;
     srand(seed);
     R_matrix R = matriz_a_lista(archivo_a_matriz<int>(std::ifstream("data/zoo_set_const_10.const")));
     double_matrix X = archivo_a_matriz<double>(std::ifstream("data/zoo_set.dat"));

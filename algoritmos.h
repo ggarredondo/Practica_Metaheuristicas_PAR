@@ -19,7 +19,7 @@ size_t infeasibility(size_t xi, int cj, const std::vector<int> C, const R_matrix
 
 inline size_t total_infeasibility(const std::vector<int> C, const R_matrix& R) {
     size_t total = 0;
-    for (auto& xi : C)
+    for (size_t xi = 0; xi < C.size(); ++xi)
         total += infeasibility(xi, C[xi], C, R);
     return total;
 }
@@ -87,11 +87,11 @@ std::vector<int> greedy_copkm(const double_matrix& X, const R_matrix& R, std::ve
 void reparar_solucion(std::vector<int>& C, const R_matrix& R, size_t k)  {
     size_t x_min, inf, min;
     for (size_t ci = 0; ci < k; ++ci) {
-        if (empty(C, ci)) {
+        if (count_elements(C, ci)==0) {
             min = 65535;
             for (size_t xi = 0; xi < R.size(); ++xi) {
                 inf = infeasibility(xi, ci, C, R);
-                if (inf < min) {
+                if (inf < min && count_elements(C, C[xi]) > 1) {
                     min = inf;
                     x_min = xi;
                 }

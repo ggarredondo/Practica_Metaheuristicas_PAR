@@ -91,14 +91,14 @@ public:
     }
 };
 
-inline bool empty(const std::vector<int>& C, size_t index) {
-    return find(C.begin(), C.end(), index)==C.end();
+inline size_t count_elements(const std::vector<int>& C, size_t index) {
+    return count(C.begin(), C.end(), index);
 }
 
 inline size_t empty_clusters(const std::vector<int>& C, size_t k) {
     size_t sum = 0;
     for (size_t i = 0; i < k; ++i)
-        sum += empty(C, i);
+        sum += (count_elements(C, i)==0);
     return sum;
 }
 
