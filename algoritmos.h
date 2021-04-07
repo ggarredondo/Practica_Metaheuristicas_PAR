@@ -17,6 +17,13 @@ size_t infeasibility(size_t xi, int cj, const std::vector<int> C, const R_matrix
     return inf;
 }
 
+inline size_t total_infeasibility(const std::vector<int> C, const R_matrix& R) {
+    size_t total = 0;
+    for (auto& xi : C)
+        total += infeasibility(xi, C[xi], C, R);
+    return total;
+}
+
 std::vector<int> greedy_copkm(const double_matrix& X, const R_matrix& R, std::vector<cluster>& clusters, size_t seed)
 {
     std::vector<int> C(X.size(), -1); // -1 == ningún cluster, 0 == 1º cluster, 1 == 2º cluster....
@@ -32,13 +39,16 @@ std::vector<int> greedy_copkm(const double_matrix& X, const R_matrix& R, std::ve
     std::list<size_t> asignaciones;
     size_t inf, min, c_min;
     double d_min, d;
-    do {   
+    bool hay_vacios;
+    for (size_t it = 0; it < 500 && C_ant != C; ++it)
+    {
         C_ant = C;
 
         for (auto& xi : RSI) {
             d_min = DBL_MAX;
             min = 65535;
             asignaciones.clear();
+            hay_vacios = false;
 
             // Calcular el incremento en infeasibility que produce la asignacion xi a cada cluster cj
             for (size_t cj = 0; cj < clusters.size(); ++cj) {
@@ -69,7 +79,7 @@ std::vector<int> greedy_copkm(const double_matrix& X, const R_matrix& R, std::ve
         for (auto& ci : clusters)
             ci.actualizar_centroide();
 
-    } while(C_ant != C);
+    }
     
     return C;
 }

@@ -59,11 +59,11 @@ class cluster {
 private:
     std::vector<double> centroide;
     double_matrix puntos;
+    size_t index;
 
 public:
-    cluster(std::vector<double>& c) : centroide(c) {}
-
-    cluster(size_t seed, size_t size) {
+    cluster(size_t index, size_t seed, size_t size) {
+        this->index = index;
         centroide.resize(size);
         generate(centroide.begin(), centroide.end(), gen);
     }
@@ -75,9 +75,9 @@ public:
     void actualizar_centroide() {
         if (!puntos.empty()) {
             centroide = puntos[0];
-            size_t size = puntos.size();
-            for (size_t i = 1; i < size; ++i)
+            for (size_t i = 1; i < puntos.size(); ++i)
                 transform(centroide.begin(), centroide.end(), puntos[i].begin(), centroide.begin(), std::plus<double>());
+            size_t size = centroide.size();
             for (size_t i = 0; i < size; ++i)
                 centroide[i] /= size;
             puntos.clear();
@@ -91,6 +91,17 @@ public:
     inline bool operator==(const cluster& c) const {
         return centroide == c.centroide;
     }
+
+    inline bool empty(const std::vector<int>& C) const {
+        return find(C.begin(), C.end(), index)==C.end();
+    }
 };
+
+inline size_t empty_clusters(const std::vector<cluster>& clusters, const std::vector<int>& C) {
+    size_t sum = 0;
+    for (auto& ci : clusters)
+        sum += ci.empty(C);
+    return sum;
+}
 
 #endif //PRACTICA1_MH_PAR_UTILIDADES_H
