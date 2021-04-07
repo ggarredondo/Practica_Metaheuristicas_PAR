@@ -9,6 +9,10 @@ int main() {
     std::vector<cluster> clusters;
     for (size_t i = 0; i < k; ++i)
         clusters.push_back(cluster(seed, X[0].size()));
-    
+    std::vector<int> C = greedy_copkm(X, R, clusters, seed);
+
+    for (auto &v : C)
+        std::cout << v << std::endl;
+
     return 0;
 }

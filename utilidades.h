@@ -73,12 +73,15 @@ public:
     }
 
     void actualizar_centroide() {
-        centroide = puntos[0];
-        size_t size = puntos.size();
-        for (size_t i = 1; i < size; ++i)
-            transform(centroide.begin(), centroide.end(), puntos[i].begin(), centroide.begin(), std::plus<double>());
-        for (size_t i = 0; i < size; ++i)
-            centroide[i] /= size;
+        if (!puntos.empty()) {
+            centroide = puntos[0];
+            size_t size = puntos.size();
+            for (size_t i = 1; i < size; ++i)
+                transform(centroide.begin(), centroide.end(), puntos[i].begin(), centroide.begin(), std::plus<double>());
+            for (size_t i = 0; i < size; ++i)
+                centroide[i] /= size;
+            puntos.clear();
+        }
     }
 
     inline double distancia_centroide(const std::vector<double>& punto) const {
