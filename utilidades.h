@@ -30,6 +30,7 @@ std::vector<std::vector<T> > archivo_a_matriz(std::ifstream archivo)
         datos.push_back(aux);
         aux.clear();
     }
+    archivo.close();
     return datos;
 }
 
@@ -49,6 +50,11 @@ inline double distancia_euclidea(const std::vector<double>& a, const std::vector
     return sqrt(result);
 }
 
+inline double gen() {
+    return (rand()%1000)*0.001;
+}
+
+// Pre: todos los puntos deben ser del mismo número de elementos
 class cluster {
 private:
     std::vector<double> centroide;
@@ -56,6 +62,11 @@ private:
 
 public:
     cluster(std::vector<double>& c) : centroide(c) {}
+
+    cluster(size_t seed, size_t size) {
+        centroide.resize(size);
+        generate(centroide.begin(), centroide.end(), gen);
+    }
 
     inline void aniadir_punto(const std::vector<double>& punto) {
         puntos.push_back(punto);
