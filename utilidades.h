@@ -91,13 +91,13 @@ public:
     }
 };
 
-inline size_t count_elements(const std::vector<int>& C, size_t index) {
-    return count(C.begin(), C.end(), index);
+inline size_t count_elements(const std::vector<int>& C, int ci) {
+    return count(C.begin(), C.end(), ci);
 }
 
 inline size_t empty_clusters(const std::vector<int>& C, size_t k) {
     size_t sum = 0;
-    for (size_t i = 0; i < k; ++i)
+    for (int i = 0; i < k; ++i)
         sum += (count_elements(C, i)==0);
     return sum;
 }

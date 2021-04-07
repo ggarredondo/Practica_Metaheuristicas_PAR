@@ -86,7 +86,7 @@ std::vector<int> greedy_copkm(const double_matrix& X, const R_matrix& R, std::ve
 
 void reparar_solucion(std::vector<int>& C, const R_matrix& R, size_t k)  {
     size_t x_min, inf, min;
-    for (size_t ci = 0; ci < k; ++ci) {
+    for (int  ci = 0; ci < k; ++ci) {
         if (count_elements(C, ci)==0) {
             min = 65535;
             for (size_t xi = 0; xi < R.size(); ++xi) {
