@@ -10,11 +10,12 @@ int main() {
     double_matrix X = archivo_a_matriz<double>(std::ifstream("data/zoo_set.dat"));
     std::vector<cluster> clusters;
     for (size_t i = 0; i < k; ++i)
-        clusters.push_back(cluster(i, seed, X[0].size()));
+        clusters.push_back(cluster(seed, X[0].size()));
     std::vector<int> C = greedy_copkm(X, R, clusters, seed);
+    reparar_solucion(C, R, k);
 
     std::cout << "Infactibilidad: " << total_infeasibility(C, R) << std::endl;
-    std::cout << "Clusters vacíos: " << empty_clusters(clusters, C) << std::endl;
+    std::cout << "Clusters vacíos: " << empty_clusters(C, k) << std::endl;
     std::cout << seed << std::endl;
 
     return 0;

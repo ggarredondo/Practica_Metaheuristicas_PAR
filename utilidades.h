@@ -59,11 +59,9 @@ class cluster {
 private:
     std::vector<double> centroide;
     double_matrix puntos;
-    size_t index;
 
 public:
-    cluster(size_t index, size_t seed, size_t size) {
-        this->index = index;
+    cluster(size_t seed, size_t size) {
         centroide.resize(size);
         generate(centroide.begin(), centroide.end(), gen);
     }
@@ -91,16 +89,16 @@ public:
     inline bool operator==(const cluster& c) const {
         return centroide == c.centroide;
     }
-
-    inline bool empty(const std::vector<int>& C) const {
-        return find(C.begin(), C.end(), index)==C.end();
-    }
 };
 
-inline size_t empty_clusters(const std::vector<cluster>& clusters, const std::vector<int>& C) {
+inline bool empty(const std::vector<int>& C, size_t index) {
+    return find(C.begin(), C.end(), index)==C.end();
+}
+
+inline size_t empty_clusters(const std::vector<int>& C, size_t k) {
     size_t sum = 0;
-    for (auto& ci : clusters)
-        sum += ci.empty(C);
+    for (size_t i = 0; i < k; ++i)
+        sum += empty(C, i);
     return sum;
 }
 

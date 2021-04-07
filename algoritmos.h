@@ -9,7 +9,7 @@
 // cj no es igual al cluster al que pertenece xk y la restrición es must-link
 size_t infeasibility(size_t xi, int cj, const std::vector<int> C, const R_matrix& R) {
     size_t xk = 0, inf = 0;
-    for (auto &v : R[xi]) {
+    for (auto& v : R[xi]) {
         if (xi != xk)
             inf += (cj == C[xk] && v == -1) || (cj != C[xk] && v == 1);
         xk++;
@@ -82,6 +82,23 @@ std::vector<int> greedy_copkm(const double_matrix& X, const R_matrix& R, std::ve
     }
     
     return C;
+}
+
+void reparar_solucion(std::vector<int>& C, const R_matrix& R, size_t k)  {
+    size_t x_min, inf, min;
+    for (size_t ci = 0; ci < k; ++ci) {
+        if (empty(C, ci)) {
+            min = 65535;
+            for (size_t xi = 0; xi < R.size(); ++xi) {
+                inf = infeasibility(xi, ci, C, R);
+                if (inf < min) {
+                    min = inf;
+                    x_min = xi;
+                }
+            }
+            C[x_min] = ci;
+        }
+    }
 }
 
 #endif //PRACTICA1_MH_PAR_ALGORITMOS_H
