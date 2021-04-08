@@ -1,12 +1,14 @@
 #include <iostream>
 #include "algoritmos.h"
 
-// seeds to further test: 1617824198, 1617824607
+// zoo seeds to test: 1617873919, 1617873954
+// glass seeds to test: 1617874026, 1617874083
+// bupa seeds to test: 1617872058, 1617873434
 int main() {
-    size_t seed = 1617824607, k = 16;
+    size_t seed = time(NULL), k = 7;
     srand(seed);
-    R_matrix R = matriz_a_lista(archivo_a_matriz<int>(std::ifstream("data/zoo_set_const_10.const")));
-    double_matrix X = archivo_a_matriz<double>(std::ifstream("data/zoo_set.dat"));
+    R_matrix R = matriz_a_lista(archivo_a_matriz<int>(std::ifstream("data/glass_set_const_10.const")));
+    double_matrix X = archivo_a_matriz<double>(std::ifstream("data/glass_set.dat"));
     std::vector<cluster> clusters;
     for (size_t i = 0; i < k; ++i)
         clusters.push_back(cluster(seed, X[0].size()));

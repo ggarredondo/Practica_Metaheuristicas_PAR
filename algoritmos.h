@@ -39,16 +39,14 @@ std::vector<int> greedy_copkm(const double_matrix& X, const R_matrix& R, std::ve
     std::list<size_t> asignaciones;
     size_t inf, min, c_min;
     double d_min, d;
-    bool hay_vacios;
-    for (size_t it = 0; it < 500 && C_ant != C; ++it)
+    for (size_t it = 0; it < 200 && C_ant != C; ++it)
     {
         C_ant = C;
 
         for (auto& xi : RSI) {
             d_min = DBL_MAX;
-            min = 65535;
+            min = (size_t)-1;
             asignaciones.clear();
-            hay_vacios = false;
 
             // Calcular el incremento en infeasibility que produce la asignacion xi a cada cluster cj
             for (size_t cj = 0; cj < clusters.size(); ++cj) {
@@ -88,7 +86,7 @@ void reparar_solucion(std::vector<int>& C, const R_matrix& R, size_t k)  {
     size_t x_min, inf, min;
     for (int  ci = 0; ci < k; ++ci) {
         if (count_elements(C, ci)==0) {
-            min = 65535;
+            min = (size_t)-1;
             for (size_t xi = 0; xi < R.size(); ++xi) {
                 inf = infeasibility(xi, ci, C, R);
                 if (inf < min && count_elements(C, C[xi]) > 1) {
