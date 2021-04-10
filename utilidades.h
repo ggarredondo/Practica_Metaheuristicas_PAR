@@ -86,8 +86,20 @@ public:
         return distancia_euclidea(centroide, punto);
     }
 
-    inline bool operator==(const cluster& c) const {
-        return centroide == c.centroide;
+    void actualizar_puntos(const std::vector<int>& C, int ci, const double_matrix& X) {
+        puntos.clear();
+        for (size_t i = 0; i < C.size(); ++i) {
+            if (ci == C[i])
+                puntos.push_back(X[i]);
+        }
+    }
+
+    double distancia_intracluster(const std::vector<int>& C, int ci, const double_matrix& X) {
+        actualizar_puntos(C, ci, X);
+        double result = 0;
+        for (auto &xi : puntos)
+            result += distancia_centroide(xi);
+        return result/puntos.size();
     }
 };
 
@@ -100,6 +112,14 @@ inline size_t empty_clusters(const std::vector<int>& C, size_t k) {
     for (int i = 0; i < k; ++i)
         sum += (count_elements(C, i)==0);
     return sum;
+}
+
+double desviacion_general(const std::vector<int>& C, const double_matrix& X, std::vector<cluster>& clusters) {
+    double result = 0;
+    size_t size = clusters.size();
+    for (size_t i = 0; i < size; ++i)
+        result += clusters[i].distancia_intracluster(C, i, X);
+    return result/size;
 }
 
 #endif //PRACTICA1_MH_PAR_UTILIDADES_H
