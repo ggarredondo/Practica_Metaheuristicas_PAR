@@ -77,6 +77,10 @@ public:
         puntos.push_back(punto);
     }
 
+    inline void eliminar_puntos() {
+        puntos.clear();
+    }
+
     void actualizar_centroide() {
         if (!puntos.empty()) {
             centroide = puntos[0];
@@ -85,7 +89,6 @@ public:
             size_t size = centroide.size();
             for (size_t i = 0; i < size; ++i)
                 centroide[i] /= size;
-            puntos.clear();
         }
     }
 
@@ -99,6 +102,7 @@ public:
             if (ci == C[i])
                 puntos.push_back(X[i]);
         }
+        actualizar_centroide();
     }
 
     double distancia_intracluster(const std::vector<int>& C, int ci, const double_matrix& X) {
@@ -110,14 +114,10 @@ public:
     }
 };
 
-inline size_t count_elements(const std::vector<int>& C, int ci) {
-    return count(C.begin(), C.end(), ci);
-}
-
 inline size_t empty_clusters(const std::vector<int>& C, size_t k) {
     size_t sum = 0;
     for (int i = 0; i < k; ++i)
-        sum += (count_elements(C, i)==0);
+        sum += (count(C.begin(), C.end(), i)==0);
     return sum;
 }
 

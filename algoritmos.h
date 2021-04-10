@@ -72,9 +72,10 @@ std::vector<int> greedy_copkm(const double_matrix& X, const R_matrix& R, std::ve
         }
 
         // Actualizar el centroide promediando las instancias de su cluster asociado ci
-        for (auto& ci : clusters)
+        for (auto& ci : clusters) {
             ci.actualizar_centroide();
-
+            ci.eliminar_puntos();
+        }
     }
     
     return C;
@@ -83,11 +84,11 @@ std::vector<int> greedy_copkm(const double_matrix& X, const R_matrix& R, std::ve
 void reparar_solucion(std::vector<int>& C, const R_matrix& R, size_t k)  {
     size_t x_min, inf, min;
     for (int  ci = 0; ci < k; ++ci) {
-        if (count_elements(C, ci)==0) {
+        if (count(C.begin(), C.end(), ci)==0) {
             min = (size_t)-1;
             for (size_t xi = 0; xi < R.size(); ++xi) {
                 inf = infeasibility(xi, ci, C, R);
-                if (inf < min && count_elements(C, C[xi]) > 1) {
+                if (inf < min && count(C.begin(), C.end(), C[xi]) > 1) {
                     min = inf;
                     x_min = xi;
                 }
@@ -102,9 +103,51 @@ inline double fitness(const std::vector<int>& C, const double_matrix& X, const R
     return desviacion_general(C, X, clusters) + lambda*total_infeasibility(C, R);
 }
 
-std::vector<int> busqueda_trayectorias_simples(const double_matrix& X, const R_matrix& R, std::vector<cluster>& clusters, double lambda, size_t seed)
+void cambio_cluster(std::vector<int> S, size_t i, size_t l, int_matrix& vecindario, size_t k) {
+    S[i] = l;
+    if (empty_clusters(S, k) > 0)
+        vecindario.push_back(S);
+}
+
+std::vector<int> busqueda_trayectorias_simples(const double_matrix& X, const R_matrix& R, std::vector<cluster>& clusters, size_t seed, double lambda)
 {
     std::vector<int> C;
+    int_matrix vecindario;
+    size_t k = clusters.size(), n = X.size();
+
+    // Generar aleatoriamente la solución inicial
+    while (empty_clusters(C, k) > 0) {
+        C.clear();
+        for (size_t i = 0; i < n; ++i)
+            C.push_back(rand()%k);
+    }
+
+    double f_actual;
+    bool hay_mejora = true;
+    std::vector<size_t> vRSI;
+    while (hay_mejora) {
+        hay_mejora = false;
+        f_actual = fitness(C, X, R, clusters, lambda);
+
+        for (size_t i = 0; i < n; ++i) {
+            for (size_t l = 0; l < k; ++l) {
+                if (C[i] != l)
+                    cambio_cluster(C, i, l, vecindario, k);
+            }
+        }
+        vRSI.clear();
+        for (size_t i = 0; i < vecindario.size(); ++i)
+            vRSI.push_back(i);
+        shuffle(vRSI.begin(), vRSI.end(), std::default_random_engine(seed));
+
+        for (auto s = vRSI.begin(); s != vRSI.end() && !hay_mejora; ++s) {
+            if (f_actual == fitness(vecindario[*s], X, R, clusters, lambda)) {
+                hay_mejora = true;
+                C = vecindario[*s];
+            }
+        }
+    }
+
     return C;
 }
 
