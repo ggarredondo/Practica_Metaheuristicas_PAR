@@ -115,33 +115,37 @@ std::vector<int> busqueda_trayectorias_simples(const double_matrix& X, const R_m
     int_matrix vecindario;
     size_t k = clusters.size(), n = X.size();
 
-    // Generar aleatoriamente la solución inicial
+    // Generación de la solución inicial
     while (empty_clusters(C, k) > 0) {
         C.clear();
         for (size_t i = 0; i < n; ++i)
             C.push_back(rand()%k);
     }
 
-    double f_actual;
+    double f_actual = fitness(C, X, R, clusters, lambda), f_vecino;
     bool hay_mejora = true;
     std::vector<size_t> vRSI;
     while (hay_mejora) {
         hay_mejora = false;
-        f_actual = fitness(C, X, R, clusters, lambda);
 
+        // Generación del entorno de solución
         for (size_t i = 0; i < n; ++i) {
             for (size_t l = 0; l < k; ++l) {
                 if (C[i] != l)
                     cambio_cluster(C, i, l, vecindario, k);
             }
         }
+
+        // Exploración aleatoria del entorno
         vRSI.clear();
         for (size_t i = 0; i < vecindario.size(); ++i)
             vRSI.push_back(i);
         shuffle(vRSI.begin(), vRSI.end(), std::default_random_engine(seed));
 
+        // Aceptar el primer vecino que mejora la solución actual
         for (auto s = vRSI.begin(); s != vRSI.end() && !hay_mejora; ++s) {
-            if (f_actual == fitness(vecindario[*s], X, R, clusters, lambda)) {
+            f_vecino = fitness(vecindario[*s], X, R, clusters, lambda);
+            if (f_vecino < f_actual) {
                 hay_mejora = true;
                 C = vecindario[*s];
             }

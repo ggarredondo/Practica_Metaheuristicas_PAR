@@ -68,6 +68,8 @@ private:
     double_matrix puntos;
 
 public:
+    cluster() {}
+
     cluster(size_t seed, size_t n) {
         centroide.resize(n);
         generate(centroide.begin(), centroide.end(), gen);
