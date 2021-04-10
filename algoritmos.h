@@ -8,12 +8,9 @@
 // o
 // cj no es igual al cluster al que pertenece xk y la restrición es must-link
 size_t infeasibility(size_t xi, int cj, const std::vector<int> C, const R_matrix& R) {
-    size_t xk = 0, inf = 0;
-    for (auto& v : R[xi]) {
-        if (xi != xk)
-            inf += (cj == C[xk] && v == -1) || (cj != C[xk] && v == 1);
-        xk++;
-    }
+    size_t inf = 0;
+    for (auto& v : R[xi])
+        inf += (cj == C[v.first] && v.second == -1) || (cj != C[v.first] && v.second == 1);
     return inf;
 }
 
@@ -24,6 +21,7 @@ inline size_t total_infeasibility(const std::vector<int> C, const R_matrix& R) {
     return total;
 }
 
+// ------------------------------GREEDY------------------------------
 std::vector<int> greedy_copkm(const double_matrix& X, const R_matrix& R, std::vector<cluster>& clusters, size_t seed)
 {
     std::vector<int> C(X.size(), -1); // -1 == ningún cluster, 0 == 1º cluster, 1 == 2º cluster....
@@ -97,6 +95,17 @@ void reparar_solucion(std::vector<int>& C, const R_matrix& R, size_t k)  {
             C[x_min] = ci;
         }
     }
+}
+
+// ------------------------------BÚSQUEDA LOCAL------------------------------
+inline double fitness(const std::vector<int>& C, const double_matrix& X, const R_matrix& R, std::vector<cluster>& clusters, double lambda) {
+    return desviacion_general(C, X, clusters) + lambda*total_infeasibility(C, R);
+}
+
+std::vector<int> busqueda_trayectorias_simples(const double_matrix& X, const R_matrix& R, std::vector<cluster>& clusters, double lambda, size_t seed)
+{
+    std::vector<int> C;
+    return C;
 }
 
 #endif //PRACTICA1_MH_PAR_ALGORITMOS_H

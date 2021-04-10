@@ -34,12 +34,19 @@ std::vector<std::vector<T> > archivo_a_matriz(std::ifstream archivo)
     return datos;
 }
 
-typedef std::vector<std::list<int> > R_matrix;
+typedef std::vector<std::list<std::pair<size_t, int> > > R_matrix;
 
 R_matrix matriz_a_lista(const int_matrix& m) {
     R_matrix result;
-    for (auto& v : m)
-        result.push_back(std::list<int>(v.begin(), v.end()));
+    std::list<std::pair<size_t, int> > aux;
+    for (size_t i = 0; i < m.size(); ++i) {
+        for (size_t j = 0; j < m[0].size(); ++j) {
+            if (m[i][j] != 0 && i != j)
+                aux.push_back(std::pair<size_t, int>(j, m[i][j]));
+        }
+        result.push_back(aux);
+        aux.clear();
+    }
     return result;
 }
 
@@ -61,8 +68,8 @@ private:
     double_matrix puntos;
 
 public:
-    cluster(size_t seed, size_t size) {
-        centroide.resize(size);
+    cluster(size_t seed, size_t n) {
+        centroide.resize(n);
         generate(centroide.begin(), centroide.end(), gen);
     }
 
@@ -120,6 +127,18 @@ double desviacion_general(const std::vector<int>& C, const double_matrix& X, std
     for (size_t i = 0; i < size; ++i)
         result += clusters[i].distancia_intracluster(C, i, X);
     return result/size;
+}
+
+double distancia_maxima(const double_matrix& X) {
+    double max = 0, d;
+    for (size_t i = 0; i < X.size(); ++i) {
+        for (size_t j = i+1; j < X[0].size(); ++j) {
+            d = distancia_euclidea(X[i], X[j]);
+            if (d > max)
+                max = d;
+        }
+    }
+    return max;
 }
 
 #endif //PRACTICA1_MH_PAR_UTILIDADES_H
