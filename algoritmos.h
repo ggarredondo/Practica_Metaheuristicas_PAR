@@ -3,6 +3,7 @@
 #include <random>
 #include <cfloat>
 #include "utilidades.h"
+#include <chrono>
 
 // cj es igual al cluster al que pertenece xk y la restricción es cannot-link
 // o
@@ -103,16 +104,10 @@ inline double fitness(const std::vector<int>& C, const double_matrix& X, const R
     return desviacion_general(C, X, clusters) + lambda*total_infeasibility(C, R);
 }
 
-void cambio_cluster(std::vector<int> S, size_t i, size_t l, int_matrix& vecindario, size_t k) {
-    S[i] = l;
-    if (empty_clusters(S, k) > 0)
-        vecindario.push_back(S);
-}
-
 std::vector<int> busqueda_trayectorias_simples(const double_matrix& X, const R_matrix& R, std::vector<cluster>& clusters, size_t seed, double lambda)
 {
-    std::vector<int> C;
-    int_matrix vecindario;
+    std::vector<int> C, S;
+    std::vector<std::pair<size_t, size_t> > vecindario;
     size_t k = clusters.size(), n = X.size();
 
     // Generación de la solución inicial
@@ -124,32 +119,31 @@ std::vector<int> busqueda_trayectorias_simples(const double_matrix& X, const R_m
 
     double f_actual = fitness(C, X, R, clusters, lambda), f_vecino;
     bool hay_mejora = true;
-    std::vector<size_t> vRSI;
-    while (hay_mejora) {
+    for (size_t it = 0; it < 1000 && hay_mejora; ++it) {
         hay_mejora = false;
 
         // Generación del entorno de solución
         for (size_t i = 0; i < n; ++i) {
             for (size_t l = 0; l < k; ++l) {
                 if (C[i] != l)
-                    cambio_cluster(C, i, l, vecindario, k);
+                    vecindario.push_back(std::pair<size_t, size_t>(i, l));
             }
         }
 
         // Exploración aleatoria del entorno
-        vRSI.clear();
-        for (size_t i = 0; i < vecindario.size(); ++i)
-            vRSI.push_back(i);
-        shuffle(vRSI.begin(), vRSI.end(), std::default_random_engine(seed));
+        shuffle(vecindario.begin(), vecindario.end(), std::default_random_engine(seed));
 
         // Aceptar el primer vecino que mejora la solución actual
-        for (auto s = vRSI.begin(); s != vRSI.end() && !hay_mejora; ++s) {
-            f_vecino = fitness(vecindario[*s], X, R, clusters, lambda);
-            if (f_vecino < f_actual) {
+        for (auto s = vecindario.begin(); s != vecindario.end() && !hay_mejora; ++s) {
+            S = C;
+            S[s->first] = s->second;
+            f_vecino = fitness(S, X, R, clusters, lambda);
+            if (f_vecino < f_actual && empty_clusters(S, k) == 0) {
                 hay_mejora = true;
-                C = vecindario[*s];
+                C = S;
             }
         }
+        vecindario.clear();
     }
 
     return C;
