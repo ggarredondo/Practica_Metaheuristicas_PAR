@@ -22,7 +22,7 @@ int main() {
     std::cout << "Desviación general: " << desviacion_general(C, X, clusters) << std::endl;
     std::cout << "Clusters vacíos: " << empty_clusters(C, k) << std::endl;
     std::cout << "Tiempo transcurrido: " << std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count() << " ms " << std::endl;
-    std::cout << seed << std::endl;
+    std::cout << "Semilla:" << seed << std::endl;
 
     return 0;
 }
