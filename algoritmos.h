@@ -135,7 +135,7 @@ std::vector<int> busqueda_trayectorias_simples(const double_matrix& X, const R_m
                 }
             }
         }
-        //std::cout << "f_actual: " << f_actual << std::endl << std::endl;
+        //std::cout << "-f_actual: " << f_actual << "-\n" << std::endl;
     }
 
     return C;
