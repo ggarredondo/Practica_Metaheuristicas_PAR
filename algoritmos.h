@@ -118,7 +118,7 @@ std::vector<int> busqueda_trayectorias_simples(const double_matrix& X, const R_m
 
     double f_actual = fitness(C, X, R, clusters, lambda), f_vecino;
     bool hay_mejora = true;
-    while (hay_mejora) {
+    for (size_t it = 0; it < 10000 && hay_mejora; ++it) {
         hay_mejora = false;
 
         // Exploración aleatoria del entorno y selección del primer mejor vecino
@@ -127,7 +127,8 @@ std::vector<int> busqueda_trayectorias_simples(const double_matrix& X, const R_m
                 S = C;
                 S[i] = l;
                 f_vecino = fitness(S, X, R, clusters, lambda);
-                if (f_vecino < f_actual && empty_clusters(S, k) == 0) {
+                //std::cout << "f_vecino: " << f_vecino << std::endl;
+                if (f_vecino <= f_actual && empty_clusters(S, k) == 0) {
                     f_actual = f_vecino;
                     hay_mejora = true;
                     C = S;

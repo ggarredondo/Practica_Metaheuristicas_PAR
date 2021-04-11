@@ -14,7 +14,7 @@
 int main()
 {
     // Inicializar semillas y número de clusters
-    size_t seed = time(NULL), k = 7;
+    size_t seed = 1618141873, k = 7;
     srand(seed);
 
     // Leer datos
