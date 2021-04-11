@@ -14,12 +14,12 @@
 int main()
 {
     // Inicializar semillas y número de clusters
-    size_t seed = time(NULL), k = 16;
+    size_t seed = time(NULL), k = 7;
     srand(seed);
 
     // Leer datos
-    R_matrix R = matriz_a_lista(archivo_a_matriz<int>(std::ifstream("data/bupa_set_const_10.const")));
-    double_matrix X = archivo_a_matriz<double>(std::ifstream("data/bupa_set.dat"));
+    R_matrix R = matriz_a_lista(archivo_a_matriz<int>(std::ifstream("data/zoo_set_const_10.const")));
+    double_matrix X = archivo_a_matriz<double>(std::ifstream("data/zoo_set.dat"));
     std::vector<cluster> clusters;
 
     // Inicializar clusters
@@ -39,10 +39,9 @@ int main()
     std::cout << "Semilla: " << seed << std::endl << std::endl;
 
     // Ejecución de búsqueda local
-    double lambda = distancia_maxima(X)/BUPA_10;
+    double lambda = distancia_maxima(X)/ZOO_10;
     start_time = std::chrono::system_clock::now();
-    C = busqueda_trayectorias_simples(X, R, clusters, seed, lambda);
-    reparar_solucion(C, R, k);
+    C = busqueda_trayectorias_simples(X, R, clusters, lambda);
     end_time = std::chrono::system_clock::now();
 
     std::cout << "-Búsqueda por trayectorias simples-\nInfactibilidad: " << total_infeasibility(C, R) << std::endl;

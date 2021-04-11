@@ -104,10 +104,9 @@ inline double fitness(const std::vector<int>& C, const double_matrix& X, const R
     return desviacion_general(C, X, clusters) + lambda*total_infeasibility(C, R);
 }
 
-std::vector<int> busqueda_trayectorias_simples(const double_matrix& X, const R_matrix& R, std::vector<cluster>& clusters, size_t seed, double lambda)
+std::vector<int> busqueda_trayectorias_simples(const double_matrix& X, const R_matrix& R, std::vector<cluster>& clusters, double lambda)
 {
     std::vector<int> C, S;
-    std::vector<std::pair<size_t, size_t> > vecindario;
     size_t k = clusters.size(), n = X.size();
 
     // Generación de la solución inicial
@@ -119,31 +118,23 @@ std::vector<int> busqueda_trayectorias_simples(const double_matrix& X, const R_m
 
     double f_actual = fitness(C, X, R, clusters, lambda), f_vecino;
     bool hay_mejora = true;
-    for (size_t it = 0; it < 1000 && hay_mejora; ++it) {
+    while (hay_mejora) {
         hay_mejora = false;
 
-        // Generación del entorno de solución
-        for (size_t i = 0; i < n; ++i) {
-            for (size_t l = 0; l < k; ++l) {
-                if (C[i] != l)
-                    vecindario.push_back(std::pair<size_t, size_t>(i, l));
+        // Exploración aleatoria del entorno y selección del primer mejor vecino
+        for (size_t i = rand()%n, ci = 0; ci < n && !hay_mejora; i = (i+1)%n, ++ci) {
+            for (size_t l = rand()%k, cl = 0; cl < k && !hay_mejora; l = (l+1)%k, ++cl) {
+                S = C;
+                S[i] = l;
+                f_vecino = fitness(S, X, R, clusters, lambda);
+                if (f_vecino < f_actual && empty_clusters(S, k) == 0) {
+                    f_actual = f_vecino;
+                    hay_mejora = true;
+                    C = S;
+                }
             }
         }
-
-        // Exploración aleatoria del entorno
-        shuffle(vecindario.begin(), vecindario.end(), std::default_random_engine(seed));
-
-        // Aceptar el primer vecino que mejora la solución actual
-        for (auto s = vecindario.begin(); s != vecindario.end() && !hay_mejora; ++s) {
-            S = C;
-            S[s->first] = s->second;
-            f_vecino = fitness(S, X, R, clusters, lambda);
-            if (f_vecino < f_actual && empty_clusters(S, k) == 0) {
-                hay_mejora = true;
-                C = S;
-            }
-        }
-        vecindario.clear();
+        //std::cout << "f_actual: " << f_actual << std::endl << std::endl;
     }
 
     return C;
