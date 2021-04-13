@@ -86,10 +86,10 @@ public:
     void actualizar_centroide() {
         if (!puntos.empty()) {
             centroide = puntos[0];
-            for (size_t i = 1; i < puntos.size(); ++i)
-                transform(centroide.begin(), centroide.end(), puntos[i].begin(), centroide.begin(), std::plus<double>());
-            size_t size = centroide.size();
-            for (size_t i = 0; i < size; ++i)
+            size_t size = puntos.size();
+            for (size_t i = 1; i < size; ++i)
+                transform(centroide.begin(), centroide.end(), puntos[i].begin(), centroide.begin(), std::plus<>());
+            for (size_t i = 0; i < centroide.size(); ++i)
                 centroide[i] /= size;
         }
     }

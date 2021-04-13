@@ -127,7 +127,6 @@ std::vector<int> busqueda_trayectorias_simples(const double_matrix& X, const R_m
                 S = C;
                 S[i] = l;
                 f_vecino = fitness(S, X, R, clusters, lambda);
-                //std::cout << "f_vecino: " << f_vecino << std::endl;
                 if (f_vecino <= f_actual && empty_clusters(S, k) == 0) {
                     f_actual = f_vecino;
                     hay_mejora = true;
@@ -135,7 +134,6 @@ std::vector<int> busqueda_trayectorias_simples(const double_matrix& X, const R_m
                 }
             }
         }
-        //std::cout << "-f_actual: " << f_actual << "-\n" << std::endl;
     }
 
     return C;

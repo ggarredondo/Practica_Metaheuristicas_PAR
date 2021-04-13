@@ -8,13 +8,13 @@
 #define BUPA_10 5632
 #define BUPA_20 10824
 
-// zoo seeds to test: 1617873919, 1617873954
+// zoo seeds to test: 1617873919, 1617873954, 1618305706
 // glass seeds to test: 1617874026, 1617874083
 // bupa seeds to test: 1617872058, 1617873434
 int main()
 {
     // Inicializar semillas y número de clusters
-    size_t seed = 1618141873, k = 7;
+    size_t seed = 1618305706, k = 7;
     srand(seed);
 
     // Leer datos
