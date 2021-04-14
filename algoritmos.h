@@ -38,7 +38,7 @@ std::vector<int> greedy_copkm(const double_matrix& X, const R_matrix& R, std::ve
     std::list<size_t> asignaciones;
     size_t inf, min, c_min;
     double d_min, d;
-    for (size_t it = 0; it < 200 && C_ant != C; ++it)
+    for (size_t it = 0; it < 10000 && C_ant != C; ++it)
     {
         C_ant = C;
 
@@ -135,7 +135,7 @@ std::vector<int> busqueda_trayectorias_simples(const double_matrix& X, const R_m
             }
         }
     }
-
+    std::cout << "Agregado: " << f_actual << std::endl;
     return C;
 }
 
