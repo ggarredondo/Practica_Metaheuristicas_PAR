@@ -80,11 +80,11 @@ int main(int argc, char *argv[])
     std::cout << "Tiempo transcurrido: " << std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count() << " ms " << std::endl;
     std::cout << "Semilla: " << seed << std::endl << std::endl;
 
-    std::cout << "-Búsqueda por trayectorias simples-" << std::endl;
+    std::cout << "-Búsqueda local-" << std::endl;
     // Ejecución de búsqueda local
     double lambda = distancia_maxima(X)*10/Rlista.size();
     start_time = std::chrono::system_clock::now();
-    C = busqueda_trayectorias_simples(X, R, clusters, lambda);
+    C = busqueda_local(X, R, clusters, lambda);
     end_time = std::chrono::system_clock::now();
 
     std::cout << "Infactibilidad: " << total_infeasibility(C, R) << std::endl;

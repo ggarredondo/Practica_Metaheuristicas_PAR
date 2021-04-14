@@ -105,7 +105,7 @@ inline double fitness(const std::vector<int>& C, const double_matrix& X, const R
     return desviacion_general(C, X, clusters) + lambda*total_infeasibility(C, R);
 }
 
-std::vector<int> busqueda_trayectorias_simples(const double_matrix& X, const R_matrix& R, std::vector<cluster>& clusters, double lambda)
+std::vector<int> busqueda_local(const double_matrix& X, const R_matrix& R, std::vector<cluster>& clusters, double lambda)
 {
     std::vector<int> C, S;
     size_t k = clusters.size(), n = X.size();
