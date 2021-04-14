@@ -14,12 +14,12 @@
 int main()
 {
     // Inicializar semillas y número de clusters
-    size_t seed = time(NULL), k = 7;
+    size_t seed = 1618399285, k = 16;
     srand(seed);
 
     // Leer datos
-    R_matrix R = matriz_a_lista(archivo_a_matriz<int>(std::ifstream("data/zoo_set_const_20.const")));
-    double_matrix X = archivo_a_matriz<double>(std::ifstream("data/zoo_set.dat"));
+    R_matrix R = matriz_a_lista(archivo_a_matriz<int>(std::ifstream("data/bupa_set_const_20.const")));
+    double_matrix X = archivo_a_matriz<double>(std::ifstream("data/bupa_set.dat"));
     std::vector<cluster> clusters;
 
     // Inicializar clusters
@@ -40,7 +40,7 @@ int main()
 
     std::cout << "-Búsqueda por trayectorias simples-" << std::endl;
     // Ejecución de búsqueda local
-    double lambda = distancia_maxima(X)*10/ZOO_20;
+    double lambda = distancia_maxima(X)*10/BUPA_20;
     start_time = std::chrono::system_clock::now();
     C = busqueda_trayectorias_simples(X, R, clusters, lambda);
     end_time = std::chrono::system_clock::now();
