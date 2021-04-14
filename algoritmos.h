@@ -15,7 +15,8 @@ size_t infeasibility(size_t xi, int cj, const std::vector<int> C, const R_matrix
     return inf;
 }
 
-inline size_t total_infeasibility(const std::vector<int> C, const R_matrix& R) {
+// CORREGIR
+inline size_t total_infeasibility(const std::vector<int>& C, const R_matrix& R) {
     size_t total = 0;
     for (size_t xi = 0; xi < C.size(); ++xi)
         total += infeasibility(xi, C[xi], C, R);

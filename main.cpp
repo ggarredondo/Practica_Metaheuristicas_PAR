@@ -1,6 +1,7 @@
 #include <iostream>
 #include "algoritmos.h"
 #include <chrono>
+#include <string>
 #define ZOO_10 486
 #define ZOO_20 912
 #define GLASS_10 2167
@@ -8,18 +9,57 @@
 #define BUPA_10 5632
 #define BUPA_20 10824
 
+bool preparar_datos(const std::string& set, size_t res, std::string& X_file, std::string& R_file, size_t& k) {
+    bool exito = false;
+    if (set.compare("bupa") == 0 && (res == 10 || res == 20)) {
+        k = 16;
+        exito = true;
+    }
+    else if ((set.compare("zoo") == 0 || set.compare("glass") == 0) && (res == 10 || res == 20)) {
+        k = 7;
+        exito = true;
+    }
+    std::string base = std::string("data/").append(set);
+    X_file = base;
+    X_file.append("_set.dat");
+    R_file = base;
+    R_file.append("_set_const_");
+    R_file.append(std::to_string(res));
+    R_file.append(".const");
+    return exito;
+}
+
+void error() {
+    std::cout << "Error en el formato." << std::endl;
+    std::cout << "formato: ./p1_par <nombre_set> <porcentaje_rest> <semilla>" << std::endl;
+    std::cout << "\n-<nombre_set> debe estar en minúsculas." << std::endl;
+    std::cout << "-<porcentaje_rest> debe ser 10 o 20." << std::endl;
+}
+
+// formato: ./p1_par <nombre_set> <porcentaje_rest> <semilla>
 // zoo seeds: 1618392344, 1618393097, 1618393257, 1618393407, 1618393577
 // glass seeds: 1618395394, 1618397214, 1618397437, 1618397651, 1618398759
 // bupa seeds: 1618398086, 1618398519, 1618398924, 1618399070, 1618399285
-int main()
+int main(int argc, char *argv[])
 {
-    // Inicializar semillas y número de clusters
-    size_t seed = 1618399285, k = 16;
+    if (argc != 4) {
+        error();
+        return -1;
+    }
+    // inicializar parámetros y leer argumentos
+    std::string set = argv[1], X_file, R_file;
+    size_t k, res = std::stoi(argv[2]), seed = std::stoi(argv[3]);
     srand(seed);
+    if (preparar_datos(set, res, X_file, R_file, k))
+        std::cout << "Formato correcto.\n" << std::endl;
+    else {
+        error();
+        return -1;
+    }
 
     // Leer datos
-    R_matrix R = matriz_a_lista(archivo_a_matriz<int>(std::ifstream("data/bupa_set_const_20.const")));
-    double_matrix X = archivo_a_matriz<double>(std::ifstream("data/bupa_set.dat"));
+    R_matrix R = matriz_a_lista(archivo_a_matriz<int>(std::ifstream(R_file)));
+    double_matrix X = archivo_a_matriz<double>(std::ifstream(X_file));
     std::vector<cluster> clusters;
 
     // Inicializar clusters
