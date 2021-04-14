@@ -58,7 +58,9 @@ int main(int argc, char *argv[])
     }
 
     // Leer datos
-    R_matrix R = matriz_a_lista(archivo_a_matriz<int>(std::ifstream(R_file)));
+    int_matrix m = archivo_a_matriz<int>(std::ifstream(R_file));
+    R_matrix R = matriz_a_lista(m);
+    R_list Rlista = matriz_a_Rlista(m);
     double_matrix X = archivo_a_matriz<double>(std::ifstream(X_file));
     std::vector<cluster> clusters;
 
@@ -80,7 +82,7 @@ int main(int argc, char *argv[])
 
     std::cout << "-Búsqueda por trayectorias simples-" << std::endl;
     // Ejecución de búsqueda local
-    double lambda = distancia_maxima(X)*10/BUPA_20;
+    double lambda = distancia_maxima(X)*10/Rlista.size();
     start_time = std::chrono::system_clock::now();
     C = busqueda_trayectorias_simples(X, R, clusters, lambda);
     end_time = std::chrono::system_clock::now();

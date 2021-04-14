@@ -50,6 +50,24 @@ R_matrix matriz_a_lista(const int_matrix& m) {
     return result;
 }
 
+struct R {
+    size_t i, j;
+    int r;
+    R(size_t _i, size_t _j, int _r) : i(_i), j(_j), r(_r) {}
+};
+typedef std::list<R> R_list;
+
+R_list matriz_a_Rlista(const int_matrix& m) {
+    R_list result;
+    for (size_t i = 0; i < m.size(); ++i) {
+        for (size_t j = i+1; j < m[0].size(); ++j) {
+            if (m[i][j] != 0)
+                result.push_back(R(i, j, m[i][j]));
+        }
+    }
+    return result;
+}
+
 inline double distancia_euclidea(const std::vector<double>& a, const std::vector<double>& b) {
     double result = 0;
     for (size_t i = 0; i < a.size(); ++i)
