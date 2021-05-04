@@ -63,6 +63,7 @@ int main(int argc, char *argv[])
     R_list Rlista = matriz_a_Rlista(m);
     double_matrix X = archivo_a_matriz<double>(std::ifstream(X_file));
     std::vector<cluster> clusters;
+    double lambda = distancia_maxima(X)*10/Rlista.size();
 
     // Inicializar clusters
     for (size_t i = 0; i < k; ++i)
@@ -74,22 +75,20 @@ int main(int argc, char *argv[])
     reparar_solucion(C, R, k);
     std::chrono::time_point<std::chrono::system_clock> end_time = std::chrono::system_clock::now();
 
-    std::cout << "-Greedy-\nInfactibilidad: " << total_infeasibility(C, R) << std::endl;
+    std::cout << "-Greedy-\nAgregado: " << fitness(C, X, Rlista, clusters, lambda) << std::endl;
+    std::cout << "Infactibilidad: " << total_infeasibility(C, Rlista) << std::endl;
     std::cout << "Desviación general: " << desviacion_general(C, X, clusters) << std::endl;
-    std::cout << "Clusters vacíos: " << empty_clusters(C, k) << std::endl;
     std::cout << "Tiempo transcurrido: " << std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count() << " ms " << std::endl;
     std::cout << "Semilla: " << seed << std::endl << std::endl;
 
-    std::cout << "-Búsqueda local-" << std::endl;
     // Ejecución de búsqueda local
-    double lambda = distancia_maxima(X)*10/Rlista.size();
     start_time = std::chrono::system_clock::now();
-    C = busqueda_local(X, R, clusters, lambda);
+    C = busqueda_local(X, Rlista, clusters, lambda, seed);
     end_time = std::chrono::system_clock::now();
 
-    std::cout << "Infactibilidad: " << total_infeasibility(C, R) << std::endl;
+    std::cout << "-Búsqueda local-\nAgregado: " << fitness(C, X, Rlista, clusters, lambda) << std::endl;
+    std::cout << "Infactibilidad: " << total_infeasibility(C, Rlista) << std::endl;
     std::cout << "Desviación general: " << desviacion_general(C, X, clusters) << std::endl;
-    std::cout << "Clusters vacíos: " << empty_clusters(C, k) << std::endl;
     std::cout << "Tiempo transcurrido: " << std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count() << " ms " << std::endl;
     std::cout << "Semilla: " << seed << std::endl << std::endl;
 
