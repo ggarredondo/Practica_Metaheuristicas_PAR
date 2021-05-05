@@ -108,7 +108,7 @@ std::vector<int> busqueda_local(const double_matrix& X, const R_list& R, std::ve
 {
     std::vector<int> C, S;
     std::vector<std::pair<size_t, size_t> > vecindario;
-    size_t k = clusters.size(), n = X.size();
+    size_t k = clusters.size(), n = X.size(), aux;
 
     // Generación de la solución inicial
     while (empty_clusters(C, k) > 0) {
@@ -119,15 +119,20 @@ std::vector<int> busqueda_local(const double_matrix& X, const R_list& R, std::ve
 
     double f_actual = fitness(C, X, R, clusters, lambda), f_vecino;
     bool hay_mejora = true;
-    for (size_t ev = 0; ev < 1000 && hay_mejora; ++ev) {
+    for (size_t ev = 0; ev < 100000 && hay_mejora; ++ev) {
         hay_mejora = false;
 
         // Generación del entorno
         vecindario.clear();
         for (size_t i = 0; i < n; ++i) {
             for (size_t l = 0; l < k; ++l) {
-                if (C[i] != l)
-                    vecindario.push_back(std::pair<size_t, size_t>(i, l));
+                if (C[i] != l) {
+                    aux = C[i];
+                    C[i] = l;
+                    if (empty_clusters(C, k) == 0)
+                        vecindario.push_back(std::pair<size_t, size_t>(i, l));
+                    C[i] = aux;
+                }
             }
         }
 
@@ -139,7 +144,7 @@ std::vector<int> busqueda_local(const double_matrix& X, const R_list& R, std::ve
             S = C;
             S[v->first] = v->second;
             f_vecino = fitness(S, X, R, clusters, lambda);
-            if (f_vecino < f_actual && empty_clusters(S, k) == 0) { // selección del primer mejor vecino
+            if (f_vecino < f_actual) { // selección del primer mejor vecino
                 f_actual = f_vecino;
                 hay_mejora = true;
                 C = S;
@@ -151,28 +156,36 @@ std::vector<int> busqueda_local(const double_matrix& X, const R_list& R, std::ve
 
 // ------------------------------ALGORITMOS GENÉTICOS------------------------------
 
-std::vector<int> AGG_UN(const double_matrix& X, const R_list& R, std::vector<cluster>& clusters, double lambda, size_t seed)
-{
+int_matrix inicializar_poblacion(size_t cromosomas, size_t n, size_t k) {
+    int_matrix poblacion;
     std::vector<int> C;
-    return C;
+    for (size_t p = 0; p < cromosomas; ++p) {
+        while (empty_clusters(C, k) > 0) {
+            C.clear();
+            for (size_t i = 0; i < n; ++i)
+                C.push_back(rand() % k);
+        }
+        poblacion.push_back(C);
+    }
+    return poblacion;
 }
 
-std::vector<int> AGG_SF(const double_matrix& X, const R_list& R, std::vector<cluster>& clusters, double lambda, size_t seed)
-{
-    std::vector<int> C;
-    return C;
+std::vector<double> evaluar_poblacion(const int_matrix& poblacion, const double_matrix& X, std::vector<cluster>& clusters) {
+    std::vector<double> evaluacion;
+    for (auto& s : poblacion)
+        evaluacion.push_back(desviacion_general(s, X, clusters));
+    return evaluacion;
 }
 
-std::vector<int> AGE_UN(const double_matrix& X, const R_list& R, std::vector<cluster>& clusters, double lambda, size_t seed)
+std::vector<int> AGG_UN(size_t cromosomas, const double_matrix& X, const R_list& R, std::vector<cluster>& clusters, double lambda, size_t seed)
 {
-    std::vector<int> C;
-    return C;
-}
-
-std::vector<int> AGE_SF(const double_matrix& X, const R_list& R, std::vector<cluster>& clusters, double lambda, size_t seed)
-{
-    std::vector<int> C;
-    return C;
+    std::vector<int> mejor;
+    int_matrix poblacion = inicializar_poblacion(cromosomas, X.size(), clusters.size());
+    std::vector<double> evaluacion = evaluar_poblacion(poblacion, X, clusters);
+    for (size_t ev = 0; ev < 100000; ev += cromosomas) {
+        
+    }
+    return mejor;
 }
 
 #endif //PRACTICA1_MH_PAR_ALGORITMOS_H
