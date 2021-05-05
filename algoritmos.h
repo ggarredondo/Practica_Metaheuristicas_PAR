@@ -107,7 +107,7 @@ void reparar_solucion(std::vector<int>& C, const R_matrix& R, size_t k)  {
 std::vector<int> busqueda_local(const double_matrix& X, const R_list& R, std::vector<cluster>& clusters, double lambda, size_t seed)
 {
     std::vector<int> C, S;
-    std::vector<size_t> cambio_i, cambio_l;
+    std::vector<std::pair<size_t, size_t> > vecindario;
     size_t k = clusters.size(), n = X.size();
 
     // Generación de la solución inicial
@@ -117,32 +117,32 @@ std::vector<int> busqueda_local(const double_matrix& X, const R_list& R, std::ve
             C.push_back(rand()%k);
     }
 
-    // Generación del entorno inicial
-    for (size_t i = 0; i < n; ++i)
-        cambio_i.push_back(i);
-    for (size_t l = 0; l < k; ++l)
-        cambio_l.push_back(l);
-
     double f_actual = fitness(C, X, R, clusters, lambda), f_vecino;
     bool hay_mejora = true;
-    for (size_t it = 0; it < 10000 && hay_mejora; ++it) {
+    for (size_t ev = 0; ev < 1000 && hay_mejora; ++ev) {
         hay_mejora = false;
 
         // Generación del entorno
-        shuffle(cambio_i.begin(), cambio_i.end(), std::default_random_engine(seed));
-        shuffle(cambio_l.begin(), cambio_l.end(), std::default_random_engine(seed));
+        vecindario.clear();
+        for (size_t i = 0; i < n; ++i) {
+            for (size_t l = 0; l < k; ++l) {
+                if (C[i] != l)
+                    vecindario.push_back(std::pair<size_t, size_t>(i, l));
+            }
+        }
+
+        // Exploración aleatoria del entorno
+        shuffle(vecindario.begin(), vecindario.end(), std::default_random_engine(seed));
 
         // Exploración del entorno
-        for (auto &i : cambio_i) {
-            for (auto &l : cambio_l) {
-                S = C;
-                S[i] = l;
-                f_vecino = fitness(S, X, R, clusters, lambda);
-                if (f_vecino < f_actual && empty_clusters(S, k) == 0) { // selección del primer mejor vecino
-                    f_actual = f_vecino;
-                    hay_mejora = true;
-                    C = S;
-                }
+        for (auto v = vecindario.begin(); v != vecindario.end() && !hay_mejora; ++v) {
+            S = C;
+            S[v->first] = v->second;
+            f_vecino = fitness(S, X, R, clusters, lambda);
+            if (f_vecino < f_actual && empty_clusters(S, k) == 0) { // selección del primer mejor vecino
+                f_actual = f_vecino;
+                hay_mejora = true;
+                C = S;
             }
         }
     }

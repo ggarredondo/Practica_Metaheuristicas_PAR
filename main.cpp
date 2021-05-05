@@ -63,7 +63,7 @@ int main(int argc, char *argv[])
     R_list Rlista = matriz_a_Rlista(m);
     double_matrix X = archivo_a_matriz<double>(std::ifstream(X_file));
     std::vector<cluster> clusters;
-    double lambda = distancia_maxima(X)*10/Rlista.size();
+    double lambda = distancia_maxima(X)/Rlista.size();
 
     // Inicializar clusters
     for (size_t i = 0; i < k; ++i)
