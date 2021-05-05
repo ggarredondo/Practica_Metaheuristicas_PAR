@@ -149,4 +149,30 @@ std::vector<int> busqueda_local(const double_matrix& X, const R_list& R, std::ve
     return C;
 }
 
+// ------------------------------ALGORITMOS GENÉTICOS------------------------------
+
+std::vector<int> AGG_UN(const double_matrix& X, const R_list& R, std::vector<cluster>& clusters, double lambda, size_t seed)
+{
+    std::vector<int> C;
+    return C;
+}
+
+std::vector<int> AGG_SF(const double_matrix& X, const R_list& R, std::vector<cluster>& clusters, double lambda, size_t seed)
+{
+    std::vector<int> C;
+    return C;
+}
+
+std::vector<int> AGE_UN(const double_matrix& X, const R_list& R, std::vector<cluster>& clusters, double lambda, size_t seed)
+{
+    std::vector<int> C;
+    return C;
+}
+
+std::vector<int> AGE_SF(const double_matrix& X, const R_list& R, std::vector<cluster>& clusters, double lambda, size_t seed)
+{
+    std::vector<int> C;
+    return C;
+}
+
 #endif //PRACTICA1_MH_PAR_ALGORITMOS_H
