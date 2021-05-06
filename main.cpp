@@ -92,5 +92,16 @@ int main(int argc, char *argv[])
     std::cout << "Tiempo transcurrido: " << std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count() << " ms " << std::endl;
     std::cout << "Semilla: " << seed << std::endl << std::endl;
 
+    // Ejecución de algoritmo genético generacional con cruce informe
+    start_time = std::chrono::system_clock::now();
+    C = AGG_UN(X, Rlista, clusters, lambda, seed);
+    end_time = std::chrono::system_clock::now();
+
+    std::cout << "-AGG UN-\nAgregado: " << fitness(C, X, Rlista, clusters, lambda) << std::endl;
+    std::cout << "Infactibilidad: " << total_infeasibility(C, Rlista) << std::endl;
+    std::cout << "Desviación general: " << desviacion_general(C, X, clusters) << std::endl;
+    std::cout << "Tiempo transcurrido: " << std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count() << " ms " << std::endl;
+    std::cout << "Semilla: " << seed << std::endl << std::endl;
+
     return 0;
 }

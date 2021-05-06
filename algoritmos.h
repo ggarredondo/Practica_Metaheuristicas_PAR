@@ -165,6 +165,7 @@ int_matrix inicializar_poblacion(size_t n, size_t k) {
     int_matrix poblacion;
     std::vector<int> C;
     for (size_t p = 0; p < cromosomas; ++p) {
+        C.clear();
         while (empty_clusters(C, k) > 0) {
             C.clear();
             for (size_t i = 0; i < n; ++i)
@@ -193,6 +194,7 @@ int_matrix seleccion_generacional(const int_matrix& poblacion, const std::vector
     return padres;
 }
 
+// Operadores de cruce
 std::vector<int> hijo_uniforme(const std::vector<int>& padre1, const std::vector<int>& padre2, std::vector<size_t> indices, size_t seed) {
     std::vector<int> hijo;
     size_t n = padre1.size();
@@ -221,11 +223,12 @@ void cruce_uniforme(int_matrix& padres, size_t seed) {
     }
 }
 
+// Operador de mutación
 void mutacion_uniforme(int_matrix& intermedia, size_t k) {
-    size_t n = intermedia[0].size();
-    size_t n_mutaciones = num_pm/n*intermedia.size();
+    size_t n = intermedia[0].size(), M = intermedia.size();
+    size_t n_mutaciones = num_pm * M;
     for (size_t i = 0; i < n_mutaciones; ++i)
-        intermedia[i][rand()%n] = rand()%k;
+        intermedia[rand()%M][rand()%n] = rand()%k;
 }
 
 // Algoritmos
@@ -239,7 +242,7 @@ std::vector<int> AGG_UN(const double_matrix& X, const R_list& R, std::vector<clu
         // elitismo - comparar el mejor encontrado con el mejor de la población actual
         index_mejor_actual = std::min_element(evaluacion.begin(), evaluacion.end()) - evaluacion.begin();
         ev_mejor_actual = evaluacion[index_mejor_actual];
-        if (ev_mejor < ev_mejor_actual) {
+        if (ev_mejor > ev_mejor_actual) {
             index_mejor = index_mejor_actual;
             ev_mejor = ev_mejor_actual;
         }
