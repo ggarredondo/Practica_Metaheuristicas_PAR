@@ -137,7 +137,7 @@ std::vector<int> busqueda_local(const double_matrix& X, const R_list& R, std::ve
         }
 
         // Exploración aleatoria del entorno
-        shuffle(vecindario.begin(), vecindario.end(), std::default_random_engine(seed));
+        shuffle(vecindario.begin(), vecindario.end(), std::default_random_engine(seed+ev));
 
         // Exploración del entorno
         for (auto v = vecindario.begin(); v != vecindario.end() && !hay_mejora; ++v) {
@@ -156,7 +156,12 @@ std::vector<int> busqueda_local(const double_matrix& X, const R_list& R, std::ve
 
 // ------------------------------ALGORITMOS GENÉTICOS------------------------------
 
-int_matrix inicializar_poblacion(size_t cromosomas, size_t n, size_t k) {
+// Variables generales
+const size_t cromosomas = 50;
+const float pc_agg = 0.7f, num_pm = 0.1f; // Probabilidad de cruce para AGG y numerador de probabilidad de mutación
+
+// Funciones generales
+int_matrix inicializar_poblacion(size_t n, size_t k) {
     int_matrix poblacion;
     std::vector<int> C;
     for (size_t p = 0; p < cromosomas; ++p) {
@@ -170,20 +175,69 @@ int_matrix inicializar_poblacion(size_t cromosomas, size_t n, size_t k) {
     return poblacion;
 }
 
-std::vector<double> evaluar_poblacion(const int_matrix& poblacion, const double_matrix& X, std::vector<cluster>& clusters) {
+std::vector<double> evaluar_poblacion(const int_matrix& poblacion, const double_matrix& X, const R_list& R, std::vector<cluster>& clusters, double lambda) {
     std::vector<double> evaluacion;
     for (auto& s : poblacion)
-        evaluacion.push_back(desviacion_general(s, X, clusters));
+        evaluacion.push_back(fitness(s, X, R, clusters, lambda));
     return evaluacion;
 }
 
-std::vector<int> AGG_UN(size_t cromosomas, const double_matrix& X, const R_list& R, std::vector<cluster>& clusters, double lambda, size_t seed)
+int_matrix seleccion_generacional(const int_matrix& poblacion, const std::vector<double>& evaluacion) {
+    int_matrix padres;
+    size_t index1, index2;
+    while (padres.size() < poblacion.size()) {
+        index1 = rand()%poblacion.size();
+        index2 = rand()%poblacion.size();
+        padres.push_back(poblacion[evaluacion[index2] >= evaluacion[index1] ? index1 : index2]);
+    }
+    return padres;
+}
+
+std::vector<int> hijo_uniforme(const std::vector<int>& padre1, const std::vector<int>& padre2, std::vector<size_t> indices, size_t seed) {
+    std::vector<int> hijo;
+    size_t n = padre1.size();
+    hijo.resize(n);
+    shuffle(indices.begin(), indices.end(), std::default_random_engine(seed));
+    while (!indices.empty()) {
+        if (indices.size() > n*0.5)
+            hijo[indices.back()] = padre1[indices.back()];
+        else
+            hijo[indices.back()] = padre2[indices.back()];
+        indices.pop_back();
+    }
+    return hijo;
+}
+
+void cruce_uniforme(int_matrix& padres, size_t seed) {
+    size_t n_cruces = pc_agg*padres.size()*0.5f, n = padres[0].size();
+    std::vector<size_t> indices;
+    for (size_t i = 0; i < n; ++i)
+        indices.push_back(i);
+    for (size_t i = 1; i < n_cruces; ++i) {
+        // primer hijo
+        padres[i-1] = hijo_uniforme(padres[i-1], padres[i], indices, seed+i);
+        // segundo hijo
+        padres[i] = hijo_uniforme(padres[i-1], padres[i], indices, seed+i);
+    }
+}
+
+void mutacion_uniforme(int_matrix& intermedia, size_t k) {
+    size_t n = intermedia[0].size();
+    size_t n_mutaciones = num_pm/n*intermedia.size();
+    for (size_t i = 0; i < n_mutaciones; ++i)
+        intermedia[i][rand()%n] = rand()%k;
+}
+
+// Algoritmos
+std::vector<int> AGG_UN(const double_matrix& X, const R_list& R, std::vector<cluster>& clusters, double lambda, size_t seed)
 {
     std::vector<int> mejor;
-    int_matrix poblacion = inicializar_poblacion(cromosomas, X.size(), clusters.size());
-    std::vector<double> evaluacion = evaluar_poblacion(poblacion, X, clusters);
+    int_matrix poblacion = inicializar_poblacion(X.size(), clusters.size()), seleccionados;
+    std::vector<double> evaluacion = evaluar_poblacion(poblacion, X, R, clusters, lambda);
     for (size_t ev = 0; ev < 100000; ev += cromosomas) {
-        
+        seleccionados = seleccion_generacional(poblacion, evaluacion);
+        cruce_uniforme(seleccionados, seed);
+        mutacion_uniforme(seleccionados, clusters.size());
     }
     return mejor;
 }
