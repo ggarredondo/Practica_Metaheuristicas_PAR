@@ -234,18 +234,14 @@ void mutacion_uniforme(int_matrix& intermedia, size_t k) {
 // Algoritmos
 std::vector<int> AGG_UN(const double_matrix& X, const R_list& R, std::vector<cluster>& clusters, double lambda, size_t seed)
 {
-    size_t index_mejor, index_mejor_actual, index_peor;
-    double ev_mejor = DBL_MAX, ev_mejor_actual;
+    size_t index_mejor, index_peor;
+    double ev_mejor;
     int_matrix poblacion = inicializar_poblacion(X.size(), clusters.size()), seleccionados;
     std::vector<double> evaluacion = evaluar_poblacion(poblacion, X, R, clusters, lambda);
     for (size_t ev = 0; ev < 100000; ev += cromosomas) {
-        // elitismo - comparar el mejor encontrado con el mejor de la población actual
-        index_mejor_actual = std::min_element(evaluacion.begin(), evaluacion.end()) - evaluacion.begin();
-        ev_mejor_actual = evaluacion[index_mejor_actual];
-        if (ev_mejor > ev_mejor_actual) {
-            index_mejor = index_mejor_actual;
-            ev_mejor = ev_mejor_actual;
-        }
+        // elitismo - encontrar el mejor de la población actual
+        index_mejor = std::min_element(evaluacion.begin(), evaluacion.end()) - evaluacion.begin();
+        ev_mejor = evaluacion[index_mejor];
 
         seleccionados = seleccion_generacional(poblacion, evaluacion);
         cruce_uniforme(seleccionados, seed);
@@ -260,6 +256,7 @@ std::vector<int> AGG_UN(const double_matrix& X, const R_list& R, std::vector<clu
         }
         poblacion = seleccionados;
     }
+    index_mejor = std::min_element(evaluacion.begin(), evaluacion.end()) - evaluacion.begin();
     return poblacion[index_mejor];
 }
 
