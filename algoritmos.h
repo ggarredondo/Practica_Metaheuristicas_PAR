@@ -219,7 +219,7 @@ void cruce_uniforme(int_matrix& padres, size_t seed) {
         // primer hijo
         padres[i-1] = hijo_uniforme(padres[i-1], padres[i], indices, seed+i);
         // segundo hijo
-        padres[i] = hijo_uniforme(padres[i-1], padres[i], indices, seed+i);
+        padres[i] = hijo_uniforme(padres[i-1], padres[i], indices, seed-i);
     }
 }
 
@@ -244,7 +244,7 @@ std::vector<int> AGG_UN(const double_matrix& X, const R_list& R, std::vector<clu
         ev_mejor = evaluacion[index_mejor];
 
         seleccionados = seleccion_generacional(poblacion, evaluacion);
-        cruce_uniforme(seleccionados, seed);
+        cruce_uniforme(seleccionados, seed+ev);
         mutacion_uniforme(seleccionados, clusters.size());
         evaluacion = evaluar_poblacion(seleccionados, X, R, clusters, lambda);
 
