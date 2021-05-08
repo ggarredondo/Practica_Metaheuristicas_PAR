@@ -48,7 +48,7 @@ int main(int argc, char *argv[])
     }
     // inicializar parámetros y leer argumentos
     std::string set = argv[1], X_file, R_file;
-    size_t k, res = std::stoi(argv[2]), seed = time(NULL);
+    size_t k, res = std::stoi(argv[2]), seed = std::stoi(argv[3]);
     srand(seed);
     if (preparar_datos(set, res, X_file, R_file, k))
         std::cout << "Formato correcto.\n" << std::endl;
