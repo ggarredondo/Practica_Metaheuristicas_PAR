@@ -48,7 +48,7 @@ int main(int argc, char *argv[])
     }
     // inicializar parámetros y leer argumentos
     std::string set = argv[1], X_file, R_file;
-    size_t k, res = std::stoi(argv[2]), seed = std::stoi(argv[3]);
+    size_t k, res = std::stoi(argv[2]), seed = time(NULL);
     srand(seed);
     if (preparar_datos(set, res, X_file, R_file, k))
         std::cout << "Formato correcto.\n" << std::endl;
@@ -95,6 +95,7 @@ int main(int argc, char *argv[])
     // Ejecución de algoritmo genético generacional con cruce informe
     start_time = std::chrono::system_clock::now();
     C = AGG_UN(X, Rlista, clusters, lambda, seed);
+    reparar_solucion(C, R, k);
     end_time = std::chrono::system_clock::now();
 
     std::cout << "-AGG UN-\nAgregado: " << fitness(C, X, Rlista, clusters, lambda) << std::endl;

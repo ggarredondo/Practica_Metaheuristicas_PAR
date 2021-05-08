@@ -215,7 +215,7 @@ void cruce_uniforme(int_matrix& padres, size_t seed) {
     std::vector<size_t> indices;
     for (size_t i = 0; i < n; ++i)
         indices.push_back(i);
-    for (size_t i = 1; i < n_cruces; ++i) {
+    for (size_t i = 1; i < n_cruces*2; i += 2) {
         // primer hijo
         padres[i-1] = hijo_uniforme(padres[i-1], padres[i], indices, seed+i);
         // segundo hijo
