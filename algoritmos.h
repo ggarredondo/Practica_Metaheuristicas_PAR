@@ -275,11 +275,10 @@ void cruce_segmento_fijo(float p, int_matrix& padres, size_t seed) {
 }
 
 //---Operador de mutación---
-void mutacion_uniforme(int_matrix& intermedia, size_t k) {
-    size_t n = intermedia[0].size(), M = intermedia.size();
-    size_t n_mutaciones = num_pm * M;
+void mutacion_uniforme(int_matrix& intermedia, size_t k, size_t M) {
+    size_t n = intermedia[0].size(), n_mutaciones = num_pm * M;
     for (size_t i = 0; i < n_mutaciones; ++i)
-        intermedia[rand()%M][rand()%n] = rand()%k;
+        intermedia[rand()%intermedia.size()][rand()%n] = rand()%k;
 }
 
 //---Algoritmos---
@@ -296,7 +295,7 @@ std::vector<int> AGG_UN(const double_matrix& X, const R_list& R, std::vector<clu
 
         seleccionados = seleccion_generacional(poblacion, evaluacion);
         cruce_uniforme(pc_agg, seleccionados, seed+ev);
-        mutacion_uniforme(seleccionados, clusters.size());
+        mutacion_uniforme(seleccionados, clusters.size(), poblacion.size());
         evaluacion = evaluar_poblacion(seleccionados, X, R, clusters, lambda);
 
         // elitismo - reemplazamiento
@@ -324,7 +323,7 @@ std::vector<int> AGG_SF(const double_matrix& X, const R_list& R, std::vector<clu
 
         seleccionados = seleccion_generacional(poblacion, evaluacion);
         cruce_segmento_fijo(pc_agg, seleccionados, seed+ev);
-        mutacion_uniforme(seleccionados, clusters.size());
+        mutacion_uniforme(seleccionados, clusters.size(), poblacion.size());
         evaluacion = evaluar_poblacion(seleccionados, X, R, clusters, lambda);
 
         // elitismo - reemplazamiento
@@ -341,19 +340,28 @@ std::vector<int> AGG_SF(const double_matrix& X, const R_list& R, std::vector<clu
 
 std::vector<int> AGE_UN(const double_matrix& X, const R_list& R, std::vector<cluster>& clusters, double lambda, size_t seed)
 {
+    size_t index_peor;
     int_matrix poblacion = inicializar_poblacion(X.size(), clusters.size()), seleccionados;
-    std::vector<double> evaluacion_p = evaluar_poblacion(poblacion, X, R, clusters, lambda), evaluacion_h;
+    std::vector<double> evaluacion = evaluar_poblacion(poblacion, X, R, clusters, lambda), ev_h;
     for (size_t ev = 0; ev < 100000; ev += 2) {
-        seleccionados = seleccion_estacionario(poblacion, evaluacion_p);
+        seleccionados = seleccion_estacionario(poblacion, evaluacion);
         cruce_uniforme(1, seleccionados, seed+ev);
-        mutacion_uniforme(seleccionados, clusters.size());
-        evaluacion_h = evaluar_poblacion(seleccionados, X, R, clusters, lambda);
+        mutacion_uniforme(seleccionados, clusters.size(), poblacion.size());
+        ev_h = evaluar_poblacion(seleccionados, X, R, clusters, lambda);
 
-        // reemplazamiento
-        size_t index_peor = std::max_element(evaluacion_p.begin(), evaluacion_p.end()) - evaluacion_p.begin();
-        poblacion[index_peor] = seleccionados[std::min_element(evaluacion_h.begin(), evaluacion_h.end()) - evaluacion_h.begin()];
+        // Reemplazamiento
+        poblacion.push_back(seleccionados.front());
+        evaluacion.push_back(ev_h.front());
+        poblacion.push_back(seleccionados.back());
+        evaluacion.push_back(ev_h.back());
+        for (size_t i = 0; i < 2; ++i) {
+            index_peor = std::max_element(evaluacion.begin(), evaluacion.end()) - evaluacion.begin();
+            poblacion.erase(poblacion.begin()+index_peor);
+            evaluacion.erase(evaluacion.begin()+index_peor);
+        }
+        ev_h.clear();
     }
-    return poblacion[std::min_element(evaluacion_p.begin(), evaluacion_p.end()) - evaluacion_p.begin()];
+    return poblacion[std::min_element(evaluacion.begin(), evaluacion.end()) - evaluacion.begin()];
 }
 
 #endif //PRACTICA1_MH_PAR_ALGORITMOS_H
