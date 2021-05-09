@@ -364,4 +364,30 @@ std::vector<int> AGE_UN(const double_matrix& X, const R_list& R, std::vector<clu
     return poblacion[std::min_element(evaluacion.begin(), evaluacion.end()) - evaluacion.begin()];
 }
 
+std::vector<int> AGE_SF(const double_matrix& X, const R_list& R, std::vector<cluster>& clusters, double lambda, size_t seed)
+{
+    size_t index_peor;
+    int_matrix poblacion = inicializar_poblacion(X.size(), clusters.size()), seleccionados;
+    std::vector<double> evaluacion = evaluar_poblacion(poblacion, X, R, clusters, lambda), ev_h;
+    for (size_t ev = 0; ev < 100000; ev += 2) {
+        seleccionados = seleccion_estacionario(poblacion, evaluacion);
+        cruce_segmento_fijo(1, seleccionados, seed+ev);
+        mutacion_uniforme(seleccionados, clusters.size(), poblacion.size());
+        ev_h = evaluar_poblacion(seleccionados, X, R, clusters, lambda);
+
+        // Reemplazamiento
+        poblacion.push_back(seleccionados.front());
+        evaluacion.push_back(ev_h.front());
+        poblacion.push_back(seleccionados.back());
+        evaluacion.push_back(ev_h.back());
+        for (size_t i = 0; i < 2; ++i) {
+            index_peor = std::max_element(evaluacion.begin(), evaluacion.end()) - evaluacion.begin();
+            poblacion.erase(poblacion.begin()+index_peor);
+            evaluacion.erase(evaluacion.begin()+index_peor);
+        }
+        ev_h.clear();
+    }
+    return poblacion[std::min_element(evaluacion.begin(), evaluacion.end()) - evaluacion.begin()];
+}
+
 #endif //PRACTICA1_MH_PAR_ALGORITMOS_H

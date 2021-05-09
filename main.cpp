@@ -89,7 +89,7 @@ int main(int argc, char *argv[])
     end_time = std::chrono::system_clock::now();
     mostrar_resultados("Búsqueda local", fitness(C, X, Rlista, clusters, lambda), total_infeasibility(C, Rlista), desviacion_general(C, X, clusters), std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count());
 
-    // Ejecución de algoritmo genético generacional con cruce informe
+    // Ejecución de algoritmo genético generacional con cruce uniforme
     start_time = std::chrono::system_clock::now();
     C = AGG_UN(X, Rlista, clusters, lambda, seed);
     reparar_solucion(C, R, k);
@@ -103,12 +103,19 @@ int main(int argc, char *argv[])
     end_time = std::chrono::system_clock::now();
     mostrar_resultados("AGG_SF", fitness(C, X, Rlista, clusters, lambda), total_infeasibility(C, Rlista), desviacion_general(C, X, clusters), std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count());
 
-    // Ejecución de algoritmo genético generacional con cruce por segmento fijo
+    // Ejecución de algoritmo genético estacionario con cruce uniforme
     start_time = std::chrono::system_clock::now();
     C = AGE_UN(X, Rlista, clusters, lambda, seed);
     reparar_solucion(C, R, k);
     end_time = std::chrono::system_clock::now();
     mostrar_resultados("AGE_UN", fitness(C, X, Rlista, clusters, lambda), total_infeasibility(C, Rlista), desviacion_general(C, X, clusters), std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count());
+
+    // Ejecución de algoritmo genético estacionario con cruce uniforme
+    start_time = std::chrono::system_clock::now();
+    C = AGE_SF(X, Rlista, clusters, lambda, seed);
+    reparar_solucion(C, R, k);
+    end_time = std::chrono::system_clock::now();
+    mostrar_resultados("AGE_SF", fitness(C, X, Rlista, clusters, lambda), total_infeasibility(C, Rlista), desviacion_general(C, X, clusters), std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count());
 
     std::cout << "Semilla: " << seed << std::endl;
 
