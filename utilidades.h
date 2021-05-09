@@ -130,7 +130,9 @@ public:
         double result = 0;
         for (auto &xi : puntos)
             result += distancia_centroide(xi);
-        return result/puntos.size();
+        if (!puntos.empty())
+            result /= puntos.size();
+        return result;
     }
 };
 

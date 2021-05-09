@@ -195,13 +195,15 @@ int_matrix seleccion_generacional(const int_matrix& poblacion, const std::vector
 }
 
 // Operadores de cruce
+
+// Cruce uniforme
 std::vector<int> hijo_uniforme(const std::vector<int>& padre1, const std::vector<int>& padre2, std::vector<size_t> indices, size_t seed) {
     std::vector<int> hijo;
     size_t n = padre1.size();
     hijo.resize(n);
     shuffle(indices.begin(), indices.end(), std::default_random_engine(seed));
     while (!indices.empty()) {
-        if (indices.size() > n*0.5)
+        if (indices.size() > n*0.5f)
             hijo[indices.back()] = padre1[indices.back()];
         else
             hijo[indices.back()] = padre2[indices.back()];
@@ -211,15 +213,52 @@ std::vector<int> hijo_uniforme(const std::vector<int>& padre1, const std::vector
 }
 
 void cruce_uniforme(int_matrix& padres, size_t seed) {
-    size_t n_cruces = pc_agg*padres.size()*0.5f, n = padres[0].size();
+    size_t n_cruces = pc_agg*padres.size()*0.5f;
     std::vector<size_t> indices;
-    for (size_t i = 0; i < n; ++i)
+    for (size_t i = 0; i < padres[0].size(); ++i)
         indices.push_back(i);
     for (size_t i = 1; i < n_cruces*2; i += 2) {
         // primer hijo
         padres[i-1] = hijo_uniforme(padres[i-1], padres[i], indices, seed+i);
         // segundo hijo
         padres[i] = hijo_uniforme(padres[i-1], padres[i], indices, seed-i);
+    }
+}
+
+// Cruce segmento fijo
+std::vector<int> hijo_segmento_fijo(const std::vector<int>& padre1, const std::vector<int>& padre2, std::vector<size_t> indices, size_t seed) {
+    std::vector<int> hijo;
+    size_t n = padre1.size(), r = rand()%n, v = rand()%n, end = (r+v)%n;
+    hijo.resize(n);
+    for (size_t i = r; i != end; i = (i+1)%n) {
+        hijo[i] = padre1[i];
+        indices.erase(std::find(indices.begin(), indices.end(), i));
+    }
+    hijo[end] = padre1[end];
+    indices.erase(std::find(indices.begin(), indices.end(), end));
+    // resto de genes se seleccionan de manera uniforme
+    n = indices.size();
+    shuffle(indices.begin(), indices.end(), std::default_random_engine(seed));
+    while (!indices.empty()) {
+        if (indices.size() > n*0.5f)
+            hijo[indices.back()] = padre1[indices.back()];
+        else
+            hijo[indices.back()] = padre2[indices.back()];
+        indices.pop_back();
+    }
+    return hijo;
+}
+
+void cruce_segmento_fijo(int_matrix& padres, size_t seed) {
+    size_t n_cruces = pc_agg*padres.size()*0.5f;
+    std::vector<size_t> indices;
+    for (size_t i = 0; i < padres[0].size(); ++i)
+        indices.push_back(i);
+    for (size_t i = 1; i < n_cruces*2; i += 2) {
+        // primer hijo
+        padres[i-1] = hijo_segmento_fijo(padres[i-1], padres[i], indices, seed+i);
+        // segundo hijo
+        padres[i] = hijo_segmento_fijo(padres[i-1], padres[i], indices, seed-i);
     }
 }
 
@@ -253,6 +292,34 @@ std::vector<int> AGG_UN(const double_matrix& X, const R_list& R, std::vector<clu
            index_peor = std::max_element(evaluacion.begin(), evaluacion.end()) - evaluacion.begin();
            seleccionados[index_peor] = poblacion[index_mejor];
            evaluacion[index_peor] = ev_mejor;
+        }
+        poblacion = seleccionados;
+    }
+    index_mejor = std::min_element(evaluacion.begin(), evaluacion.end()) - evaluacion.begin();
+    return poblacion[index_mejor];
+}
+
+std::vector<int> AGG_SF(const double_matrix& X, const R_list& R, std::vector<cluster>& clusters, double lambda, size_t seed)
+{
+    size_t index_mejor, index_peor;
+    double ev_mejor;
+    int_matrix poblacion = inicializar_poblacion(X.size(), clusters.size()), seleccionados;
+    std::vector<double> evaluacion = evaluar_poblacion(poblacion, X, R, clusters, lambda);
+    for (size_t ev = 0; ev < 100000; ev += cromosomas) {
+        // elitismo - encontrar el mejor de la población actual
+        index_mejor = std::min_element(evaluacion.begin(), evaluacion.end()) - evaluacion.begin();
+        ev_mejor = evaluacion[index_mejor];
+
+        seleccionados = seleccion_generacional(poblacion, evaluacion);
+        cruce_segmento_fijo(seleccionados, seed+ev);
+        mutacion_uniforme(seleccionados, clusters.size());
+        evaluacion = evaluar_poblacion(seleccionados, X, R, clusters, lambda);
+
+        // elitismo - reemplazamiento
+        if (std::find(seleccionados.begin(), seleccionados.end(), poblacion[index_mejor]) == seleccionados.end()) {
+            index_peor = std::max_element(evaluacion.begin(), evaluacion.end()) - evaluacion.begin();
+            seleccionados[index_peor] = poblacion[index_mejor];
+            evaluacion[index_peor] = ev_mejor;
         }
         poblacion = seleccionados;
     }
