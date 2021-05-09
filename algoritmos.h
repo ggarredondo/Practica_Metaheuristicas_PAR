@@ -156,11 +156,11 @@ std::vector<int> busqueda_local(const double_matrix& X, const R_list& R, std::ve
 
 // ------------------------------ALGORITMOS GENÉTICOS------------------------------
 
-// Variables generales
+//---Variables generales---
 const size_t cromosomas = 50;
 const float pc_agg = 0.7f, num_pm = 0.1f; // Probabilidad de cruce para AGG y numerador de probabilidad de mutación
 
-// Funciones generales
+//---Funciones generales---
 int_matrix inicializar_poblacion(size_t n, size_t k) {
     int_matrix poblacion;
     std::vector<int> C;
@@ -183,6 +183,7 @@ std::vector<double> evaluar_poblacion(const int_matrix& poblacion, const double_
     return evaluacion;
 }
 
+//---Operadores de selección---
 int_matrix seleccion_generacional(const int_matrix& poblacion, const std::vector<double>& evaluacion) {
     int_matrix padres;
     size_t index1, index2;
@@ -194,7 +195,18 @@ int_matrix seleccion_generacional(const int_matrix& poblacion, const std::vector
     return padres;
 }
 
-// Operadores de cruce
+int_matrix seleccion_estacionario(const int_matrix& poblacion, const std::vector<double>& evaluacion) {
+    int_matrix padres;
+    size_t index1, index2;
+    for (size_t i = 0; i < 2; ++i) {
+        index1 = rand()%poblacion.size();
+        index2 = rand()%poblacion.size();
+        padres.push_back(poblacion[evaluacion[index2] >= evaluacion[index1] ? index1 : index2]);
+    }
+    return padres;
+}
+
+//---Operadores de cruce---
 
 // Cruce uniforme
 std::vector<int> hijo_uniforme(const std::vector<int>& padre1, const std::vector<int>& padre2, std::vector<size_t> indices, size_t seed) {
@@ -212,8 +224,8 @@ std::vector<int> hijo_uniforme(const std::vector<int>& padre1, const std::vector
     return hijo;
 }
 
-void cruce_uniforme(int_matrix& padres, size_t seed) {
-    size_t n_cruces = pc_agg*padres.size()*0.5f;
+void cruce_uniforme(float p, int_matrix& padres, size_t seed) {
+    size_t n_cruces = p*padres.size()*0.5f;
     std::vector<size_t> indices;
     for (size_t i = 0; i < padres[0].size(); ++i)
         indices.push_back(i);
@@ -249,8 +261,8 @@ std::vector<int> hijo_segmento_fijo(const std::vector<int>& padre1, const std::v
     return hijo;
 }
 
-void cruce_segmento_fijo(int_matrix& padres, size_t seed) {
-    size_t n_cruces = pc_agg*padres.size()*0.5f;
+void cruce_segmento_fijo(float p, int_matrix& padres, size_t seed) {
+    size_t n_cruces = p*padres.size()*0.5f;
     std::vector<size_t> indices;
     for (size_t i = 0; i < padres[0].size(); ++i)
         indices.push_back(i);
@@ -262,7 +274,7 @@ void cruce_segmento_fijo(int_matrix& padres, size_t seed) {
     }
 }
 
-// Operador de mutación
+//---Operador de mutación---
 void mutacion_uniforme(int_matrix& intermedia, size_t k) {
     size_t n = intermedia[0].size(), M = intermedia.size();
     size_t n_mutaciones = num_pm * M;
@@ -270,7 +282,7 @@ void mutacion_uniforme(int_matrix& intermedia, size_t k) {
         intermedia[rand()%M][rand()%n] = rand()%k;
 }
 
-// Algoritmos
+//---Algoritmos---
 std::vector<int> AGG_UN(const double_matrix& X, const R_list& R, std::vector<cluster>& clusters, double lambda, size_t seed)
 {
     size_t index_mejor, index_peor;
@@ -283,7 +295,7 @@ std::vector<int> AGG_UN(const double_matrix& X, const R_list& R, std::vector<clu
         ev_mejor = evaluacion[index_mejor];
 
         seleccionados = seleccion_generacional(poblacion, evaluacion);
-        cruce_uniforme(seleccionados, seed+ev);
+        cruce_uniforme(pc_agg, seleccionados, seed+ev);
         mutacion_uniforme(seleccionados, clusters.size());
         evaluacion = evaluar_poblacion(seleccionados, X, R, clusters, lambda);
 
@@ -311,7 +323,7 @@ std::vector<int> AGG_SF(const double_matrix& X, const R_list& R, std::vector<clu
         ev_mejor = evaluacion[index_mejor];
 
         seleccionados = seleccion_generacional(poblacion, evaluacion);
-        cruce_segmento_fijo(seleccionados, seed+ev);
+        cruce_segmento_fijo(pc_agg, seleccionados, seed+ev);
         mutacion_uniforme(seleccionados, clusters.size());
         evaluacion = evaluar_poblacion(seleccionados, X, R, clusters, lambda);
 
@@ -325,6 +337,23 @@ std::vector<int> AGG_SF(const double_matrix& X, const R_list& R, std::vector<clu
     }
     index_mejor = std::min_element(evaluacion.begin(), evaluacion.end()) - evaluacion.begin();
     return poblacion[index_mejor];
+}
+
+std::vector<int> AGE_UN(const double_matrix& X, const R_list& R, std::vector<cluster>& clusters, double lambda, size_t seed)
+{
+    int_matrix poblacion = inicializar_poblacion(X.size(), clusters.size()), seleccionados;
+    std::vector<double> evaluacion_p = evaluar_poblacion(poblacion, X, R, clusters, lambda), evaluacion_h;
+    for (size_t ev = 0; ev < 100000; ev += 2) {
+        seleccionados = seleccion_estacionario(poblacion, evaluacion_p);
+        cruce_uniforme(1, seleccionados, seed+ev);
+        mutacion_uniforme(seleccionados, clusters.size());
+        evaluacion_h = evaluar_poblacion(seleccionados, X, R, clusters, lambda);
+
+        // reemplazamiento
+        size_t index_peor = std::max_element(evaluacion_p.begin(), evaluacion_p.end()) - evaluacion_p.begin();
+        poblacion[index_peor] = seleccionados[std::min_element(evaluacion_h.begin(), evaluacion_h.end()) - evaluacion_h.begin()];
+    }
+    return poblacion[std::min_element(evaluacion_p.begin(), evaluacion_p.end()) - evaluacion_p.begin()];
 }
 
 #endif //PRACTICA1_MH_PAR_ALGORITMOS_H

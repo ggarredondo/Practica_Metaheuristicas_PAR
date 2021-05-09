@@ -36,6 +36,13 @@ void error() {
     std::cout << "-<porcentaje_rest> debe ser 10 o 20." << std::endl;
 }
 
+void mostrar_resultados(const std::string& algoritmo, double fitness, size_t infactibilidad, double desviacion, double tiempo) {
+    std::cout << "-" << algoritmo << "-\nAgregado: " << fitness << std::endl;
+    std::cout << "Infactibilidad: " << infactibilidad << std::endl;
+    std::cout << "Desviación general: " << desviacion << std::endl;
+    std::cout << "Tiempo transcurrido: " << tiempo << " ms " << std::endl << std::endl;
+}
+
 // formato: ./p1_par <nombre_set> <porcentaje_rest> <semilla>
 // zoo seeds: 1618392344, 1618393097, 1618393257, 1618393407, 1618393577
 // glass seeds: 1618395394, 1618397214, 1618397437, 1618397651, 1618398759
@@ -48,7 +55,7 @@ int main(int argc, char *argv[])
     }
     // inicializar parámetros y leer argumentos
     std::string set = argv[1], X_file, R_file;
-    size_t k, res = std::stoi(argv[2]), seed = time(NULL);
+    size_t k, res = std::stoi(argv[2]), seed = std::stoi(argv[3]);
     srand(seed);
     if (preparar_datos(set, res, X_file, R_file, k))
         std::cout << "Formato correcto.\n" << std::endl;
@@ -74,48 +81,36 @@ int main(int argc, char *argv[])
     std::vector<int> C = greedy_copkm(X, R, clusters, seed);
     reparar_solucion(C, R, k);
     std::chrono::time_point<std::chrono::system_clock> end_time = std::chrono::system_clock::now();
-
-    std::cout << "-Greedy-\nAgregado: " << fitness(C, X, Rlista, clusters, lambda) << std::endl;
-    std::cout << "Infactibilidad: " << total_infeasibility(C, Rlista) << std::endl;
-    std::cout << "Desviación general: " << desviacion_general(C, X, clusters) << std::endl;
-    std::cout << "Tiempo transcurrido: " << std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count() << " ms " << std::endl;
-    std::cout << "Semilla: " << seed << std::endl << std::endl;
+    mostrar_resultados("Greedy", fitness(C, X, Rlista, clusters, lambda), total_infeasibility(C, Rlista), desviacion_general(C, X, clusters), std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count());
 
     // Ejecución de búsqueda local
     start_time = std::chrono::system_clock::now();
     C = busqueda_local(X, Rlista, clusters, lambda, seed);
     end_time = std::chrono::system_clock::now();
-
-    std::cout << "-Búsqueda local-\nAgregado: " << fitness(C, X, Rlista, clusters, lambda) << std::endl;
-    std::cout << "Infactibilidad: " << total_infeasibility(C, Rlista) << std::endl;
-    std::cout << "Desviación general: " << desviacion_general(C, X, clusters) << std::endl;
-    std::cout << "Tiempo transcurrido: " << std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count() << " ms " << std::endl;
-    std::cout << "Semilla: " << seed << std::endl << std::endl;
+    mostrar_resultados("Búsqueda local", fitness(C, X, Rlista, clusters, lambda), total_infeasibility(C, Rlista), desviacion_general(C, X, clusters), std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count());
 
     // Ejecución de algoritmo genético generacional con cruce informe
     start_time = std::chrono::system_clock::now();
     C = AGG_UN(X, Rlista, clusters, lambda, seed);
     reparar_solucion(C, R, k);
     end_time = std::chrono::system_clock::now();
-
-    std::cout << "-AGG UN-\nAgregado: " << fitness(C, X, Rlista, clusters, lambda) << std::endl;
-    std::cout << "Infactibilidad: " << total_infeasibility(C, Rlista) << std::endl;
-    std::cout << "Desviación general: " << desviacion_general(C, X, clusters) << std::endl;
-    std::cout << "Tiempo transcurrido: " << std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count() << " ms " << std::endl;
-    std::cout << "Semilla: " << seed << std::endl << std::endl;
+    mostrar_resultados("AGG_UN", fitness(C, X, Rlista, clusters, lambda), total_infeasibility(C, Rlista), desviacion_general(C, X, clusters), std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count());
 
     // Ejecución de algoritmo genético generacional con cruce por segmento fijo
     start_time = std::chrono::system_clock::now();
     C = AGG_SF(X, Rlista, clusters, lambda, seed);
     reparar_solucion(C, R, k);
     end_time = std::chrono::system_clock::now();
+    mostrar_resultados("AGG_SF", fitness(C, X, Rlista, clusters, lambda), total_infeasibility(C, Rlista), desviacion_general(C, X, clusters), std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count());
 
-    std::cout << "-AGG SF-\nAgregado: " << fitness(C, X, Rlista, clusters, lambda) << std::endl;
-    std::cout << "Infactibilidad: " << total_infeasibility(C, Rlista) << std::endl;
-    std::cout << "Desviación general: " << desviacion_general(C, X, clusters) << std::endl;
-    std::cout << "Tiempo transcurrido: " << std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count() << " ms " << std::endl;
-    std::cout << "Semilla: " << seed << std::endl << std::endl;
+    // Ejecución de algoritmo genético generacional con cruce por segmento fijo
+    start_time = std::chrono::system_clock::now();
+    C = AGE_UN(X, Rlista, clusters, lambda, seed);
+    reparar_solucion(C, R, k);
+    end_time = std::chrono::system_clock::now();
+    mostrar_resultados("AGE_UN", fitness(C, X, Rlista, clusters, lambda), total_infeasibility(C, Rlista), desviacion_general(C, X, clusters), std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count());
 
+    std::cout << "Semilla: " << seed << std::endl;
 
     return 0;
 }
