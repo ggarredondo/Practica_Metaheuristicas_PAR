@@ -37,9 +37,10 @@ void error() {
 }
 
 void mostrar_resultados(const std::string& algoritmo, double fitness, size_t infactibilidad, double desviacion, double tiempo) {
-    std::cout << "-" << algoritmo << "-\nAgregado: " << fitness << std::endl;
+    std::cout << "-" << algoritmo << "-" << std::endl;
     std::cout << "Infactibilidad: " << infactibilidad << std::endl;
     std::cout << "Desviación general: " << desviacion << std::endl;
+    std::cout << "Agregado: " << fitness << std::endl;
     std::cout << "Tiempo transcurrido: " << tiempo << " ms " << std::endl << std::endl;
 }
 
