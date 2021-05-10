@@ -275,10 +275,11 @@ void cruce_segmento_fijo(float p, int_matrix& padres, size_t seed) {
 }
 
 //---Operador de mutación---
-void mutacion_uniforme(int_matrix& intermedia, size_t k, size_t M) {
-    size_t n = intermedia[0].size(), n_mutaciones = num_pm * M;
+void mutacion_uniforme(int_matrix& intermedia, size_t k) {
+    size_t n = intermedia[0].size(), M = intermedia.size();
+    float n_mutaciones = num_pm * M;
     for (size_t i = 0; i < n_mutaciones; ++i)
-        intermedia[rand()%intermedia.size()][rand()%n] = rand()%k;
+        intermedia[rand()%M][rand()%n] = rand()%k;
 }
 
 //---Algoritmos---
@@ -295,7 +296,7 @@ std::vector<int> AGG_UN(const double_matrix& X, const R_list& R, std::vector<clu
 
         seleccionados = seleccion_generacional(poblacion, evaluacion);
         cruce_uniforme(pc_agg, seleccionados, seed+ev);
-        mutacion_uniforme(seleccionados, clusters.size(), poblacion.size());
+        mutacion_uniforme(seleccionados, clusters.size());
         evaluacion = evaluar_poblacion(seleccionados, X, R, clusters, lambda);
 
         // elitismo - reemplazamiento
@@ -323,7 +324,7 @@ std::vector<int> AGG_SF(const double_matrix& X, const R_list& R, std::vector<clu
 
         seleccionados = seleccion_generacional(poblacion, evaluacion);
         cruce_segmento_fijo(pc_agg, seleccionados, seed+ev);
-        mutacion_uniforme(seleccionados, clusters.size(), poblacion.size());
+        mutacion_uniforme(seleccionados, clusters.size());
         evaluacion = evaluar_poblacion(seleccionados, X, R, clusters, lambda);
 
         // elitismo - reemplazamiento
@@ -346,7 +347,7 @@ std::vector<int> AGE_UN(const double_matrix& X, const R_list& R, std::vector<clu
     for (size_t ev = 0; ev < 100000; ev += 2) {
         seleccionados = seleccion_estacionario(poblacion, evaluacion);
         cruce_uniforme(1, seleccionados, seed+ev);
-        mutacion_uniforme(seleccionados, clusters.size(), poblacion.size());
+        mutacion_uniforme(seleccionados, clusters.size());
         ev_h = evaluar_poblacion(seleccionados, X, R, clusters, lambda);
 
         // Reemplazamiento
@@ -372,7 +373,7 @@ std::vector<int> AGE_SF(const double_matrix& X, const R_list& R, std::vector<clu
     for (size_t ev = 0; ev < 100000; ev += 2) {
         seleccionados = seleccion_estacionario(poblacion, evaluacion);
         cruce_segmento_fijo(1, seleccionados, seed+ev);
-        mutacion_uniforme(seleccionados, clusters.size(), poblacion.size());
+        mutacion_uniforme(seleccionados, clusters.size());
         ev_h = evaluar_poblacion(seleccionados, X, R, clusters, lambda);
 
         // Reemplazamiento
