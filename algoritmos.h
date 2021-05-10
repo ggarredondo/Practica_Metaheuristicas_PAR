@@ -282,7 +282,7 @@ void mutacion_uniforme(int_matrix& intermedia, size_t k) {
         intermedia[rand()%M][rand()%n] = rand()%k;
 }
 
-//---Algoritmos---
+//---Algoritmos genéticos---
 std::vector<int> AGG_UN(const double_matrix& X, const R_list& R, std::vector<cluster>& clusters, double lambda, size_t seed)
 {
     size_t index_mejor, index_peor;
@@ -389,6 +389,13 @@ std::vector<int> AGE_SF(const double_matrix& X, const R_list& R, std::vector<clu
         ev_h.clear();
     }
     return poblacion[std::min_element(evaluacion.begin(), evaluacion.end()) - evaluacion.begin()];
+}
+
+//---Algoritmo memético---
+
+// pbl: probabilidad para aplicar BL
+std::vector<int> AM(const double_matrix& X, const R_list& R, std::vector<cluster>& clusters, double lambda, size_t seed, float pbl, bool alMejor) {
+    return std::vector<int>();
 }
 
 #endif //PRACTICA1_MH_PAR_ALGORITMOS_H
