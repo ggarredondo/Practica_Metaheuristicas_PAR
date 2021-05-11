@@ -118,12 +118,26 @@ int main(int argc, char *argv[])
     end_time = std::chrono::system_clock::now();
     mostrar_resultados("AGE_SF", fitness(C, X, Rlista, clusters, lambda), total_infeasibility(C, Rlista), desviacion_general(C, X, clusters), std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count());
 
-    // Ejecución de algoritmo memético estacionario con cruce por segmento fijo
+    // Ejecución de algoritmo memético con probabilidad de explotación 1
     start_time = std::chrono::system_clock::now();
     C = AM(X, Rlista, clusters, lambda, seed, 1.0f, false);
     reparar_solucion(C, R, k);
     end_time = std::chrono::system_clock::now();
-    mostrar_resultados("AM-(10,1.0)", fitness(C, X, Rlista, clusters, lambda), total_infeasibility(C, Rlista), desviacion_general(C, X, clusters), std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count());
+    mostrar_resultados("AM_(10,1.0)", fitness(C, X, Rlista, clusters, lambda), total_infeasibility(C, Rlista), desviacion_general(C, X, clusters), std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count());
+
+    // Ejecución de algoritmo memético con probabilidad de explotación 0.1
+    start_time = std::chrono::system_clock::now();
+    C = AM(X, Rlista, clusters, lambda, seed, 0.1f, false);
+    reparar_solucion(C, R, k);
+    end_time = std::chrono::system_clock::now();
+    mostrar_resultados("AM_(10,0.1)", fitness(C, X, Rlista, clusters, lambda), total_infeasibility(C, Rlista), desviacion_general(C, X, clusters), std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count());
+
+    // Ejecución de algoritmo memético con explotación a los 0.1*N mejores
+    start_time = std::chrono::system_clock::now();
+    C = AM(X, Rlista, clusters, lambda, seed, 0.1f, true);
+    reparar_solucion(C, R, k);
+    end_time = std::chrono::system_clock::now();
+    mostrar_resultados("AM_(10,0.1mej)", fitness(C, X, Rlista, clusters, lambda), total_infeasibility(C, Rlista), desviacion_general(C, X, clusters), std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count());
 
     std::cout << "Semilla: " << seed << std::endl;
 

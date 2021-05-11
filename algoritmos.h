@@ -30,11 +30,10 @@ inline double fitness(const std::vector<int>& C, const double_matrix& X, const R
 std::vector<int> greedy_copkm(const double_matrix& X, const R_matrix& R, std::vector<cluster>& clusters, size_t seed)
 {
     std::vector<int> C(X.size(), -1); // -1 == ningún cluster, 0 == 1º cluster, 1 == 2º cluster....
-    std::vector<size_t> vRSI;
+    std::vector<size_t> vRSI(X.size());
+    iota(vRSI.begin(), vRSI.end(), 0);
 
     // Bajaramos los índices para recorrer X de forma aleatoria y sin repetición
-    for (size_t i = 0; i < X.size(); ++i)
-        vRSI.push_back(i);
     shuffle(vRSI.begin(), vRSI.end(), std::default_random_engine(seed));
     std::list<size_t> RSI(vRSI.begin(), vRSI.end());
 
@@ -226,9 +225,8 @@ std::vector<int> hijo_uniforme(const std::vector<int>& padre1, const std::vector
 
 void cruce_uniforme(float p, int_matrix& padres, size_t seed) {
     size_t n_cruces = p*padres.size()*0.5f;
-    std::vector<size_t> indices;
-    for (size_t i = 0; i < padres[0].size(); ++i)
-        indices.push_back(i);
+    std::vector<size_t> indices(padres[0].size());
+    iota(indices.begin(), indices.end(), 0);
     for (size_t i = 1; i < n_cruces*2; i += 2) {
         // primer hijo
         padres[i-1] = hijo_uniforme(padres[i-1], padres[i], indices, seed+i);
@@ -263,9 +261,8 @@ std::vector<int> hijo_segmento_fijo(const std::vector<int>& padre1, const std::v
 
 void cruce_segmento_fijo(float p, int_matrix& padres, size_t seed) {
     size_t n_cruces = p*padres.size()*0.5f;
-    std::vector<size_t> indices;
-    for (size_t i = 0; i < padres[0].size(); ++i)
-        indices.push_back(i);
+    std::vector<size_t> indices(padres[0].size());
+    iota(indices.begin(), indices.end(), 0);
     for (size_t i = 1; i < n_cruces*2; i += 2) {
         // primer hijo
         padres[i-1] = hijo_segmento_fijo(padres[i-1], padres[i], indices, seed+i);
@@ -393,38 +390,53 @@ std::vector<int> AGE_SF(const double_matrix& X, const R_list& R, std::vector<clu
 
 //---Algoritmo memético---
 
-size_t busqueda_local_suave(const std::vector<int>& cromosoma, size_t k, float epsilon, size_t seed) {
-    size_t n_evaluaciones = 0;
-    std::vector<size_t> RSI;
-    for (size_t i = 0; i < cromosoma.size(); ++i)
-        RSI.push_back(i);
+size_t busqueda_local_suave(std::vector<int>& cromosoma, double evaluacion, const double_matrix& X, const R_list& R, std::vector<cluster>& clusters, double lambda, float epsilon, size_t seed) {
+    size_t n_evaluaciones = 0, n = cromosoma.size(), fallos = 0, k = clusters.size();
+    std::vector<int> S;
+    std::vector<size_t> RSI(n);
+    iota(RSI.begin(), RSI.end(), 0);
     shuffle(RSI.begin(), RSI.end(), std::default_random_engine(seed));
-    bool mejora = false;
-    for (size_t fallos = 0; fallos < epsilon && !mejora; ++fallos) {
-        
+    double nueva_ev;
+    bool mejora = true;
+    for (size_t i = 0; i < n && (mejora || fallos < epsilon); ++i) {
+        mejora = false;
+        for (size_t l = 0; l < k; ++l) {
+            S = cromosoma;
+            S[RSI[i]] = l;
+            nueva_ev = fitness(S, X, R, clusters, lambda);
+            ++n_evaluaciones;
+            if (nueva_ev < evaluacion) {
+                mejora = true;
+                evaluacion = nueva_ev;
+                cromosoma = S;
+            }
+        }
+        fallos += !mejora;
     }
-
     return n_evaluaciones;
 }
 
 // pbl: probabilidad para aplicar BL
 // mejor: si se aplica BLS a los pbl*N mejores de la población
 std::vector<int> AM(const double_matrix& X, const R_list& R, std::vector<cluster>& clusters, double lambda, size_t seed, float pbl, bool mejor) {
-    size_t index_mejor, index_peor, n = X.size();
+    size_t index_mejor, index_peor;
     double ev_mejor;
-    int_matrix poblacion = inicializar_poblacion(n, clusters.size()), seleccionados;
+    int_matrix poblacion = inicializar_poblacion(X.size(), clusters.size()), seleccionados;
     float n_explotaciones = pbl*poblacion.size();
     std::vector<double> evaluacion = evaluar_poblacion(poblacion, X, R, clusters, lambda);
-    std::vector<size_t> indices;
-    for (size_t i = 0; i < poblacion.size(); ++i)
-        indices.push_back(i);
+    std::vector<size_t> indices(cromosomas);
+    std::iota(indices.begin(), indices.end(), 0);
 
     for (size_t ev = 0, gen = 0; ev < 100000; ev += cromosomas, ++gen) {
         // Cada 10 generaciones, aplicar BL
         if (gen%10 == 0 && gen >= 0) {
-            shuffle(indices.begin(), indices.end(), std::default_random_engine(seed+ev));
+            if (mejor) {
+                stable_sort(indices.begin(), indices.end(),[&evaluacion](size_t i1, size_t i2) {return evaluacion[i1] < evaluacion[i2];});
+            }
+            else
+                shuffle(indices.begin(), indices.end(), std::default_random_engine(seed+ev));
             for (size_t i = 0; i < n_explotaciones; ++i) {
-                ev += busqueda_local_suave(poblacion[indices[i]], clusters.size(), 0.1f*n, seed+ev+i);
+                ev += busqueda_local_suave(poblacion[indices[i]], evaluacion[indices[i]], X, R, clusters, lambda, 0.1f*X.size(), seed+ev+i);
             }
         }
 
