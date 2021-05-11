@@ -430,11 +430,8 @@ std::vector<int> AM(const double_matrix& X, const R_list& R, std::vector<cluster
     for (size_t ev = 0, gen = 0; ev < 100000; ev += cromosomas, ++gen) {
         // Cada 10 generaciones, aplicar BL
         if (gen%10 == 0 && gen >= 0) {
-            if (mejor) {
+            if (mejor)
                 stable_sort(indices.begin(), indices.end(),[&evaluacion](size_t i1, size_t i2) {return evaluacion[i1] < evaluacion[i2];});
-            }
-            else
-                shuffle(indices.begin(), indices.end(), std::default_random_engine(seed+ev));
             for (size_t i = 0; i < n_explotaciones; ++i) {
                 ev += busqueda_local_suave(poblacion[indices[i]], evaluacion[indices[i]], X, R, clusters, lambda, 0.1f*X.size(), seed+ev+i);
             }
