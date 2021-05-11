@@ -118,6 +118,13 @@ int main(int argc, char *argv[])
     end_time = std::chrono::system_clock::now();
     mostrar_resultados("AGE_SF", fitness(C, X, Rlista, clusters, lambda), total_infeasibility(C, Rlista), desviacion_general(C, X, clusters), std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count());
 
+    // Ejecución de algoritmo memético estacionario con cruce por segmento fijo
+    start_time = std::chrono::system_clock::now();
+    C = AM(X, Rlista, clusters, lambda, seed, 1.0f, false);
+    reparar_solucion(C, R, k);
+    end_time = std::chrono::system_clock::now();
+    mostrar_resultados("AM-(10,1.0)", fitness(C, X, Rlista, clusters, lambda), total_infeasibility(C, Rlista), desviacion_general(C, X, clusters), std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count());
+
     std::cout << "Semilla: " << seed << std::endl;
 
     return 0;

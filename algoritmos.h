@@ -393,9 +393,60 @@ std::vector<int> AGE_SF(const double_matrix& X, const R_list& R, std::vector<clu
 
 //---Algoritmo memético---
 
+size_t busqueda_local_suave(const std::vector<int>& cromosoma, size_t k, float epsilon, size_t seed) {
+    size_t n_evaluaciones = 0;
+    std::vector<size_t> RSI;
+    for (size_t i = 0; i < cromosoma.size(); ++i)
+        RSI.push_back(i);
+    shuffle(RSI.begin(), RSI.end(), std::default_random_engine(seed));
+    bool mejora = false;
+    for (size_t fallos = 0; fallos < epsilon && !mejora; ++fallos) {
+        
+    }
+
+    return n_evaluaciones;
+}
+
 // pbl: probabilidad para aplicar BL
-std::vector<int> AM(const double_matrix& X, const R_list& R, std::vector<cluster>& clusters, double lambda, size_t seed, float pbl, bool alMejor) {
-    return std::vector<int>();
+// mejor: si se aplica BLS a los pbl*N mejores de la población
+std::vector<int> AM(const double_matrix& X, const R_list& R, std::vector<cluster>& clusters, double lambda, size_t seed, float pbl, bool mejor) {
+    size_t index_mejor, index_peor, n = X.size();
+    double ev_mejor;
+    int_matrix poblacion = inicializar_poblacion(n, clusters.size()), seleccionados;
+    float n_explotaciones = pbl*poblacion.size();
+    std::vector<double> evaluacion = evaluar_poblacion(poblacion, X, R, clusters, lambda);
+    std::vector<size_t> indices;
+    for (size_t i = 0; i < poblacion.size(); ++i)
+        indices.push_back(i);
+
+    for (size_t ev = 0, gen = 0; ev < 100000; ev += cromosomas, ++gen) {
+        // Cada 10 generaciones, aplicar BL
+        if (gen%10 == 0 && gen >= 0) {
+            shuffle(indices.begin(), indices.end(), std::default_random_engine(seed+ev));
+            for (size_t i = 0; i < n_explotaciones; ++i) {
+                ev += busqueda_local_suave(poblacion[indices[i]], clusters.size(), 0.1f*n, seed+ev+i);
+            }
+        }
+
+        // elitismo - encontrar el mejor de la población actual
+        index_mejor = std::min_element(evaluacion.begin(), evaluacion.end()) - evaluacion.begin();
+        ev_mejor = evaluacion[index_mejor];
+
+        seleccionados = seleccion_generacional(poblacion, evaluacion);
+        cruce_segmento_fijo(pc_agg, seleccionados, seed+ev);
+        mutacion_uniforme(seleccionados, clusters.size());
+        evaluacion = evaluar_poblacion(seleccionados, X, R, clusters, lambda);
+
+        // elitismo - reemplazamiento
+        if (std::find(seleccionados.begin(), seleccionados.end(), poblacion[index_mejor]) == seleccionados.end()) {
+            index_peor = std::max_element(evaluacion.begin(), evaluacion.end()) - evaluacion.begin();
+            seleccionados[index_peor] = poblacion[index_mejor];
+            evaluacion[index_peor] = ev_mejor;
+        }
+        poblacion = seleccionados;
+    }
+    index_mejor = std::min_element(evaluacion.begin(), evaluacion.end()) - evaluacion.begin();
+    return poblacion[index_mejor];
 }
 
 #endif //PRACTICA1_MH_PAR_ALGORITMOS_H
