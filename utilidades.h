@@ -88,7 +88,7 @@ private:
 public:
     cluster() {}
 
-    cluster(size_t seed, size_t n) {
+    cluster(size_t n) {
         centroide.resize(n);
         generate(centroide.begin(), centroide.end(), gen);
     }

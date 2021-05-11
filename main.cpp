@@ -75,7 +75,7 @@ int main(int argc, char *argv[])
 
     // Inicializar clusters
     for (size_t i = 0; i < k; ++i)
-        clusters.push_back(cluster(seed, X[0].size()));
+        clusters.push_back(cluster(X[0].size()));
 
     // Ejecución de greedy
     std::chrono::time_point<std::chrono::system_clock> start_time = std::chrono::system_clock::now();
