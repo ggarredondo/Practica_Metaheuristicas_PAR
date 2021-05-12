@@ -308,8 +308,7 @@ std::vector<int> AGG_UN(const double_matrix& X, const R_list& R, std::vector<clu
         }
         poblacion = seleccionados;
     }
-    index_mejor = std::min_element(evaluacion.begin(), evaluacion.end()) - evaluacion.begin();
-    return poblacion[index_mejor];
+    return poblacion[std::min_element(evaluacion.begin(), evaluacion.end()) - evaluacion.begin()];
 }
 
 std::vector<int> AGG_SF(const double_matrix& X, const R_list& R, std::vector<cluster>& clusters, double lambda, size_t seed)
@@ -336,8 +335,7 @@ std::vector<int> AGG_SF(const double_matrix& X, const R_list& R, std::vector<clu
         }
         poblacion = seleccionados;
     }
-    index_mejor = std::min_element(evaluacion.begin(), evaluacion.end()) - evaluacion.begin();
-    return poblacion[index_mejor];
+    return poblacion[std::min_element(evaluacion.begin(), evaluacion.end()) - evaluacion.begin()];
 }
 
 std::vector<int> AGE_UN(const double_matrix& X, const R_list& R, std::vector<cluster>& clusters, double lambda, size_t seed)
