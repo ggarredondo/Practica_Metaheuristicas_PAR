@@ -390,8 +390,8 @@ std::vector<int> AGE_SF(const double_matrix& X, const R_list& R, std::vector<clu
 
 //---Algoritmo memético---
 
-size_t busqueda_local_suave(int_matrix& poblacion, std::vector<double>& evaluaciones, size_t index, const double_matrix& X, const R_list& R, std::vector<cluster>& clusters, double lambda, float epsilon, size_t seed) {
-    size_t n_evaluaciones = 0, n = poblacion[0].size(), fallos = 0, k = clusters.size();
+size_t busqueda_local_suave(std::vector<int>& cromosoma, double& evaluacion, const double_matrix& X, const R_list& R, std::vector<cluster>& clusters, double lambda, float epsilon, size_t seed) {
+    size_t n_evaluaciones = 0, n = cromosoma.size(), fallos = 0, k = clusters.size();
     std::vector<int> S;
     std::vector<size_t> RSI(n);
     iota(RSI.begin(), RSI.end(), 0);
@@ -401,15 +401,15 @@ size_t busqueda_local_suave(int_matrix& poblacion, std::vector<double>& evaluaci
     for (size_t i = 0; i < n && (mejora || fallos < epsilon); ++i) {
         mejora = false;
         for (size_t l = 0; l < k; ++l) {
-            if (poblacion[index][RSI[i]] != l) {
-                S = poblacion[index];
+            if (cromosoma[RSI[i]] != l) {
+                S = cromosoma;
                 S[RSI[i]] = l;
                 nueva_ev = fitness(S, X, R, clusters, lambda);
                 ++n_evaluaciones;
-                if (nueva_ev < evaluaciones[index]) {
+                if (nueva_ev < evaluacion) {
                     mejora = true;
-                    evaluaciones[index] = nueva_ev;
-                    poblacion[index] = S;
+                    evaluacion = nueva_ev;
+                    cromosoma = S;
                 }
             }
         }
@@ -435,7 +435,7 @@ std::vector<int> AM(const double_matrix& X, const R_list& R, std::vector<cluster
             if (mejor)
                 stable_sort(indices.begin(), indices.end(),[&evaluacion](size_t i1, size_t i2) {return evaluacion[i1] < evaluacion[i2];});
             for (size_t i = 0; i < n_explotaciones; ++i)
-                ev += busqueda_local_suave(poblacion, evaluacion, indices[i], X, R, clusters, lambda, 0.1f*X.size(), seed+ev+i);
+                ev += busqueda_local_suave(poblacion[indices[i]], evaluacion[indices[i]], X, R, clusters, lambda, 0.1f*X.size(), seed+ev+i);
         }
 
         // elitismo - encontrar el mejor de la población actual
