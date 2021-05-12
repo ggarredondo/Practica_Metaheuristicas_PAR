@@ -227,11 +227,13 @@ void cruce_uniforme(float p, int_matrix& padres, size_t seed) {
     size_t n_cruces = p*padres.size()*0.5f;
     std::vector<size_t> indices(padres[0].size());
     iota(indices.begin(), indices.end(), 0);
+    std::vector<int> aux;
     for (size_t i = 1; i < n_cruces*2; i += 2) {
         // primer hijo
+        aux = padres[i-1];
         padres[i-1] = hijo_uniforme(padres[i-1], padres[i], indices, seed+i);
         // segundo hijo
-        padres[i] = hijo_uniforme(padres[i-1], padres[i], indices, seed-i);
+        padres[i] = hijo_uniforme(aux, padres[i], indices, seed-i);
     }
 }
 
@@ -263,11 +265,13 @@ void cruce_segmento_fijo(float p, int_matrix& padres, size_t seed) {
     size_t n_cruces = p*padres.size()*0.5f;
     std::vector<size_t> indices(padres[0].size());
     iota(indices.begin(), indices.end(), 0);
+    std::vector<int> aux;
     for (size_t i = 1; i < n_cruces*2; i += 2) {
         // primer hijo
+        aux = padres[i-1];
         padres[i-1] = hijo_segmento_fijo(padres[i-1], padres[i], indices, seed+i);
         // segundo hijo
-        padres[i] = hijo_segmento_fijo(padres[i-1], padres[i], indices, seed-i);
+        padres[i] = hijo_segmento_fijo(aux, padres[i], indices, seed-i);
     }
 }
 
