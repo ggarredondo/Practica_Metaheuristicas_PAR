@@ -401,14 +401,16 @@ size_t busqueda_local_suave(int_matrix& poblacion, std::vector<double>& evaluaci
     for (size_t i = 0; i < n && (mejora || fallos < epsilon); ++i) {
         mejora = false;
         for (size_t l = 0; l < k; ++l) {
-            S = poblacion[index];
-            S[RSI[i]] = l;
-            nueva_ev = fitness(S, X, R, clusters, lambda);
-            ++n_evaluaciones;
-            if (nueva_ev < evaluaciones[index]) {
-                mejora = true;
-                evaluaciones[index] = nueva_ev;
-                poblacion[index] = S;
+            if (poblacion[index][RSI[i]] != l) {
+                S = poblacion[index];
+                S[RSI[i]] = l;
+                nueva_ev = fitness(S, X, R, clusters, lambda);
+                ++n_evaluaciones;
+                if (nueva_ev < evaluaciones[index]) {
+                    mejora = true;
+                    evaluaciones[index] = nueva_ev;
+                    poblacion[index] = S;
+                }
             }
         }
         fallos += !mejora;
