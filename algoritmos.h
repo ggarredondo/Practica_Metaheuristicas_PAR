@@ -429,7 +429,7 @@ std::vector<int> AM(const double_matrix& X, const R_list& R, std::vector<cluster
 
     for (size_t ev = 0, gen = 0; ev < 100000; ev += cromosomas, ++gen) {
         // Cada 10 generaciones, aplicar BL
-        if (gen%10 == 0 && gen >= 0) {
+        if (gen%10 == 0 && gen > 0) {
             if (mejor)
                 stable_sort(indices.begin(), indices.end(),[&evaluacion](size_t i1, size_t i2) {return evaluacion[i1] < evaluacion[i2];});
             for (size_t i = 0; i < n_explotaciones; ++i) {
