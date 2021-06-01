@@ -118,7 +118,7 @@ std::vector<int> busqueda_local(const double_matrix& X, const R_list& R, std::ve
 
     double f_actual = fitness(C, X, R, clusters, lambda), f_vecino;
     bool hay_mejora = true;
-    for (size_t ev = 0; ev < 100000 && hay_mejora; ++ev) {
+    for (size_t ev = 0; ev < 100000 && hay_mejora;) {
         hay_mejora = false;
 
         // Generación del entorno
@@ -143,6 +143,7 @@ std::vector<int> busqueda_local(const double_matrix& X, const R_list& R, std::ve
             S = C;
             S[v->first] = v->second;
             f_vecino = fitness(S, X, R, clusters, lambda);
+            ev++;
             if (f_vecino < f_actual) { // selección del primer mejor vecino
                 f_actual = f_vecino;
                 hay_mejora = true;
