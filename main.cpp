@@ -70,6 +70,7 @@ int main(int argc, char *argv[])
     R_matrix R = matriz_a_lista(m);
     R_list Rlista = matriz_a_Rlista(m);
     double_matrix X = archivo_a_matriz<double>(std::ifstream(X_file));
+    size_t n = X.size();
     std::vector<cluster> clusters;
     double lambda = distancia_maxima(X)/Rlista.size();
 
@@ -86,58 +87,21 @@ int main(int argc, char *argv[])
 
     // Ejecución de búsqueda local
     start_time = std::chrono::system_clock::now();
-    C = busqueda_local(X, Rlista, clusters, lambda, seed);
+    C = busqueda_local(generar_solucion_aleatoria(n, k), X, Rlista, clusters, lambda, max_evaluaciones, seed);
     end_time = std::chrono::system_clock::now();
     mostrar_resultados("Búsqueda local", fitness(C, X, Rlista, clusters, lambda), total_infeasibility(C, Rlista), desviacion_general(C, X, clusters), std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count());
 
-    // Ejecución de algoritmo genético generacional con cruce uniforme
+    // Ejecución de búsqueda multiarranque básica
     start_time = std::chrono::system_clock::now();
-    C = AGG_UN(X, Rlista, clusters, lambda, seed);
-    reparar_solucion(C, R, k);
+    C = BMB(X, Rlista, clusters, lambda, seed);
     end_time = std::chrono::system_clock::now();
-    mostrar_resultados("AGG_UN", fitness(C, X, Rlista, clusters, lambda), total_infeasibility(C, Rlista), desviacion_general(C, X, clusters), std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count());
+    mostrar_resultados("BMB", fitness(C, X, Rlista, clusters, lambda), total_infeasibility(C, Rlista), desviacion_general(C, X, clusters), std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count());
 
-    // Ejecución de algoritmo genético generacional con cruce por segmento fijo
+    // Ejecución de búsqueda local iterativa
     start_time = std::chrono::system_clock::now();
-    C = AGG_SF(X, Rlista, clusters, lambda, seed);
-    reparar_solucion(C, R, k);
+    C = ILS(X, Rlista, clusters, lambda, seed);
     end_time = std::chrono::system_clock::now();
-    mostrar_resultados("AGG_SF", fitness(C, X, Rlista, clusters, lambda), total_infeasibility(C, Rlista), desviacion_general(C, X, clusters), std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count());
-
-    // Ejecución de algoritmo genético estacionario con cruce uniforme
-    start_time = std::chrono::system_clock::now();
-    C = AGE_UN(X, Rlista, clusters, lambda, seed);
-    reparar_solucion(C, R, k);
-    end_time = std::chrono::system_clock::now();
-    mostrar_resultados("AGE_UN", fitness(C, X, Rlista, clusters, lambda), total_infeasibility(C, Rlista), desviacion_general(C, X, clusters), std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count());
-
-    // Ejecución de algoritmo genético estacionario con cruce por segmento fijo
-    start_time = std::chrono::system_clock::now();
-    C = AGE_SF(X, Rlista, clusters, lambda, seed);
-    reparar_solucion(C, R, k);
-    end_time = std::chrono::system_clock::now();
-    mostrar_resultados("AGE_SF", fitness(C, X, Rlista, clusters, lambda), total_infeasibility(C, Rlista), desviacion_general(C, X, clusters), std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count());
-
-    // Ejecución de algoritmo memético con probabilidad de explotación 1
-    start_time = std::chrono::system_clock::now();
-    C = AM(X, Rlista, clusters, lambda, seed, 1.0f, false);
-    reparar_solucion(C, R, k);
-    end_time = std::chrono::system_clock::now();
-    mostrar_resultados("AM_(10,1.0)", fitness(C, X, Rlista, clusters, lambda), total_infeasibility(C, Rlista), desviacion_general(C, X, clusters), std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count());
-
-    // Ejecución de algoritmo memético con probabilidad de explotación 0.1
-    start_time = std::chrono::system_clock::now();
-    C = AM(X, Rlista, clusters, lambda, seed, 0.1f, false);
-    reparar_solucion(C, R, k);
-    end_time = std::chrono::system_clock::now();
-    mostrar_resultados("AM_(10,0.1)", fitness(C, X, Rlista, clusters, lambda), total_infeasibility(C, Rlista), desviacion_general(C, X, clusters), std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count());
-
-    // Ejecución de algoritmo memético con explotación a los 0.1*N mejores
-    start_time = std::chrono::system_clock::now();
-    C = AM(X, Rlista, clusters, lambda, seed, 0.1f, true);
-    reparar_solucion(C, R, k);
-    end_time = std::chrono::system_clock::now();
-    mostrar_resultados("AM_(10,0.1mej)", fitness(C, X, Rlista, clusters, lambda), total_infeasibility(C, Rlista), desviacion_general(C, X, clusters), std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count());
+    mostrar_resultados("ILS", fitness(C, X, Rlista, clusters, lambda), total_infeasibility(C, Rlista), desviacion_general(C, X, clusters), std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count());
 
     std::cout << "Semilla: " << seed << std::endl;
 

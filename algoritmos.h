@@ -85,6 +85,8 @@ std::vector<int> greedy_copkm(const double_matrix& X, const R_matrix& R, std::ve
     return C;
 }
 
+// ------------------------------------------------------------------------------------
+
 void reparar_solucion(std::vector<int>& C, const R_matrix& R, size_t k)  {
     size_t x_min, inf, min;
     for (int  ci = 0; ci < k; ++ci) {
@@ -102,23 +104,29 @@ void reparar_solucion(std::vector<int>& C, const R_matrix& R, size_t k)  {
     }
 }
 
-// ------------------------------BÚSQUEDA LOCAL------------------------------
-std::vector<int> busqueda_local(const double_matrix& X, const R_list& R, std::vector<cluster>& clusters, double lambda, size_t seed)
-{
-    std::vector<int> C, S;
-    std::vector<std::pair<size_t, size_t> > vecindario;
-    size_t k = clusters.size(), n = X.size(), aux;
-
-    // Generación de la solución inicial
+std::vector<int> generar_solucion_aleatoria(size_t n, size_t k) {
+    std::vector<int> C(n);
     while (empty_clusters(C, k) > 0) {
         C.clear();
         for (size_t i = 0; i < n; ++i)
             C.push_back(rand()%k);
     }
+    return C;
+}
+
+const size_t max_evaluaciones = 100000;
+
+// ------------------------------BÚSQUEDAS BASADAS EN TRAYECTORIAS------------------------------
+
+std::vector<int> busqueda_local(const std::vector<int>& ini, const double_matrix& X, const R_list& R, std::vector<cluster>& clusters, double lambda, size_t max_ev, size_t seed)
+{
+    std::vector<std::pair<size_t, size_t> > vecindario;
+    size_t k = clusters.size(), n = X.size(), aux;
+    std::vector<int> C = ini, S;
 
     double f_actual = fitness(C, X, R, clusters, lambda), f_vecino;
     bool hay_mejora = true;
-    for (size_t ev = 0; ev < 100000 && hay_mejora;) {
+    for (size_t ev = 0; ev < max_ev && hay_mejora;) {
         hay_mejora = false;
 
         // Generación del entorno
@@ -154,6 +162,48 @@ std::vector<int> busqueda_local(const double_matrix& X, const R_list& R, std::ve
     return C;
 }
 
+// Búsqueda multiarranque básica
+std::vector<int> BMB(const double_matrix& X, const R_list& R, std::vector<cluster>& clusters, double lambda, size_t seed)
+{
+    std::vector<int> S, mejor_S;
+    size_t iteraciones = 10;
+    double f, mejor_f = DBL_MAX;
+    for (size_t ev = 0; ev < max_evaluaciones; ev += max_evaluaciones/iteraciones) {
+        S = busqueda_local(generar_solucion_aleatoria(X.size(), clusters.size()), X, R, clusters, lambda, max_evaluaciones/iteraciones, seed+ev);
+        f = fitness(S, X, R, clusters, lambda);
+        if (f < mejor_f) {
+            mejor_S = S;
+            mejor_f = f;
+        }
+    }
+    return mejor_S;
+}
+
+// Búsqueda Local Reiterada
+
+void mutacion_ils(std::vector<int>& S, size_t tam, size_t k) {
+    for (size_t i = rand()%S.size(), c = 0; c < tam; i = (i+1)%S.size(), ++c)
+        S[i] = rand()%k;
+}
+
+std::vector<int> ILS(const double_matrix& X, const R_list& R, std::vector<cluster>& clusters, double lambda, size_t seed)
+{
+    size_t iteraciones = 10;
+    std::vector<int> S = generar_solucion_aleatoria(X.size(), clusters.size());
+    std::vector<int> mejor_S = busqueda_local(S, X, R, clusters, lambda, max_evaluaciones/iteraciones, seed);
+    double f, mejor_f = DBL_MAX;
+    for (size_t ev = max_evaluaciones/iteraciones; ev < max_evaluaciones; ev += max_evaluaciones/iteraciones) {
+        mutacion_ils(S, 0.1*S.size(), clusters.size());
+        S = busqueda_local(S, X, R, clusters, lambda, max_evaluaciones/iteraciones, seed+ev);
+        f = fitness(S, X, R, clusters, lambda);
+        if (f < mejor_f) {
+            mejor_S = S;
+            mejor_f = f;
+        }
+    }
+    return mejor_S;
+}
+
 // ------------------------------ALGORITMOS GENÉTICOS------------------------------
 
 //---Variables generales---
@@ -163,16 +213,8 @@ const float pc_agg = 0.7f, num_pm = 0.1f; // Probabilidad de cruce para AGG y nu
 //---Funciones generales---
 int_matrix inicializar_poblacion(size_t n, size_t k) {
     int_matrix poblacion;
-    std::vector<int> C;
-    for (size_t p = 0; p < cromosomas; ++p) {
-        C.clear();
-        while (empty_clusters(C, k) > 0) {
-            C.clear();
-            for (size_t i = 0; i < n; ++i)
-                C.push_back(rand() % k);
-        }
-        poblacion.push_back(C);
-    }
+    for (size_t p = 0; p < cromosomas; ++p)
+        poblacion.push_back(generar_solucion_aleatoria(n, k));
     return poblacion;
 }
 
@@ -291,7 +333,7 @@ std::vector<int> AGG_UN(const double_matrix& X, const R_list& R, std::vector<clu
     double ev_mejor;
     int_matrix poblacion = inicializar_poblacion(X.size(), clusters.size()), seleccionados;
     std::vector<double> evaluacion = evaluar_poblacion(poblacion, X, R, clusters, lambda);
-    for (size_t ev = 0; ev < 100000; ev += cromosomas) {
+    for (size_t ev = 0; ev < max_evaluaciones; ev += cromosomas) {
         // elitismo - encontrar el mejor de la población actual
         index_mejor = std::min_element(evaluacion.begin(), evaluacion.end()) - evaluacion.begin();
         ev_mejor = evaluacion[index_mejor];
@@ -318,7 +360,7 @@ std::vector<int> AGG_SF(const double_matrix& X, const R_list& R, std::vector<clu
     double ev_mejor;
     int_matrix poblacion = inicializar_poblacion(X.size(), clusters.size()), seleccionados;
     std::vector<double> evaluacion = evaluar_poblacion(poblacion, X, R, clusters, lambda);
-    for (size_t ev = 0; ev < 100000; ev += cromosomas) {
+    for (size_t ev = 0; ev < max_evaluaciones; ev += cromosomas) {
         // elitismo - encontrar el mejor de la población actual
         index_mejor = std::min_element(evaluacion.begin(), evaluacion.end()) - evaluacion.begin();
         ev_mejor = evaluacion[index_mejor];
@@ -344,7 +386,7 @@ std::vector<int> AGE_UN(const double_matrix& X, const R_list& R, std::vector<clu
     size_t index_peor;
     int_matrix poblacion = inicializar_poblacion(X.size(), clusters.size()), seleccionados;
     std::vector<double> evaluacion = evaluar_poblacion(poblacion, X, R, clusters, lambda), ev_h;
-    for (size_t ev = 0; ev < 100000; ev += 2) {
+    for (size_t ev = 0; ev < max_evaluaciones; ev += 2) {
         seleccionados = seleccion_estacionario(poblacion, evaluacion);
         cruce_uniforme(1, seleccionados, seed+ev);
         mutacion_uniforme(seleccionados, clusters.size());
@@ -370,7 +412,7 @@ std::vector<int> AGE_SF(const double_matrix& X, const R_list& R, std::vector<clu
     size_t index_peor;
     int_matrix poblacion = inicializar_poblacion(X.size(), clusters.size()), seleccionados;
     std::vector<double> evaluacion = evaluar_poblacion(poblacion, X, R, clusters, lambda), ev_h;
-    for (size_t ev = 0; ev < 100000; ev += 2) {
+    for (size_t ev = 0; ev < max_evaluaciones; ev += 2) {
         seleccionados = seleccion_estacionario(poblacion, evaluacion);
         cruce_segmento_fijo(1, seleccionados, seed+ev);
         mutacion_uniforme(seleccionados, clusters.size());
@@ -432,7 +474,7 @@ std::vector<int> AM(const double_matrix& X, const R_list& R, std::vector<cluster
     std::vector<size_t> indices(cromosomas);
     std::iota(indices.begin(), indices.end(), 0);
 
-    for (size_t ev = 0, gen = 0; ev < 100000; ev += cromosomas, ++gen) {
+    for (size_t ev = 0, gen = 0; ev < max_evaluaciones; ev += cromosomas, ++gen) {
         // Cada 10 generaciones, aplicar BL
         if (gen%10 == 0 && gen > 0) {
             if (mejor)
