@@ -93,7 +93,7 @@ int main(int argc, char *argv[])
 
     // Ejecución de enfriamiento simulado
     start_time = std::chrono::system_clock::now();
-    C = enfriamiento_simulado(X, Rlista, clusters, lambda, seed);
+    C = enfriamiento_simulado(generar_solucion_aleatoria(n, k), X, Rlista, clusters, lambda, max_evaluaciones, seed);
     end_time = std::chrono::system_clock::now();
     mostrar_resultados("Enfriamiento simulado", fitness(C, X, Rlista, clusters, lambda), total_infeasibility(C, Rlista), desviacion_general(C, X, clusters), std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count());
 
@@ -108,6 +108,13 @@ int main(int argc, char *argv[])
     C = ILS(X, Rlista, clusters, lambda, seed);
     end_time = std::chrono::system_clock::now();
     mostrar_resultados("ILS", fitness(C, X, Rlista, clusters, lambda), total_infeasibility(C, Rlista), desviacion_general(C, X, clusters), std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count());
+
+    // Ejecución de ILS-ES
+    start_time = std::chrono::system_clock::now();
+    C = ILS_ES(X, Rlista, clusters, lambda, seed);
+    end_time = std::chrono::system_clock::now();
+    mostrar_resultados("ILS-ES", fitness(C, X, Rlista, clusters, lambda), total_infeasibility(C, Rlista), desviacion_general(C, X, clusters), std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count());
+
 
     std::cout << "Semilla: " << seed << std::endl;
 
