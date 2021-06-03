@@ -4,6 +4,7 @@
 #include <cfloat>
 #include "utilidades.h"
 #include <chrono>
+#include <cmath>
 
 // cj es igual al cluster al que pertenece xk y la restricción es cannot-link
 // o
@@ -162,6 +163,52 @@ std::vector<int> busqueda_local(const std::vector<int>& ini, const double_matrix
     return C;
 }
 
+// Enfriamiento Simulado
+
+inline double beta(double T0, double Tf, double M) {
+    return (T0-Tf)/(M*T0*Tf);
+}
+
+inline double esquema_cauchy(double Tk, double T0, double Tf, double M) {
+    return Tk/(1 + beta(T0,Tf,M)*Tk);
+}
+
+std::vector<int> cambio_cluster(const std::vector<int>& S, size_t n, size_t k) {
+    std::vector<int> Si;
+    do {
+        Si = S;
+        Si[rand() % n] = rand() % k;
+    } while (S == Si || empty_clusters(Si, k) > 0);
+    return Si;
+}
+
+std::vector<int> enfriamiento_simulado(const double_matrix& X, const R_list& R, std::vector<cluster>& clusters, double lambda, size_t seed)
+{
+    size_t n = X.size(), k = clusters.size(), max_vecinos = 10*n, exitos = 1, max_exitos = 0.1*max_vecinos, M = max_evaluaciones/max_vecinos;
+    std::vector<int> S = generar_solucion_aleatoria(n, k), Si, mejor_S = S;
+    double fs = fitness(S, X, R, clusters, lambda), T0 = 0.3*fs/(-log(0.3)), Tk = T0, Tf = 0.003, fi, mejor_f = fs, dif_f;
+    for (size_t ev = 0; ev < max_evaluaciones && exitos > 0;) {
+        exitos = 0;
+        for (size_t vecinos = 0; vecinos < max_vecinos && exitos < max_exitos; ++vecinos) {
+            Si = cambio_cluster(S, n, k);
+            fi = fitness(Si, X, R, clusters, lambda);
+            ev++;
+            dif_f = fi - fs;
+            if (dif_f < 0 || rand()%10*0.1 < exp(-dif_f/Tk)) {
+                exitos++;
+                S = Si;
+                fs = fi;
+                if (fs < mejor_f) {
+                    mejor_S = S;
+                    mejor_f = fs;
+                }
+            }
+        }
+        Tk *= 0.9;
+    }
+    return mejor_S;
+}
+
 // Búsqueda multiarranque básica
 std::vector<int> BMB(const double_matrix& X, const R_list& R, std::vector<cluster>& clusters, double lambda, size_t seed)
 {
@@ -189,8 +236,8 @@ void mutacion_ils(std::vector<int>& S, size_t tam, size_t k) {
 std::vector<int> ILS(const double_matrix& X, const R_list& R, std::vector<cluster>& clusters, double lambda, size_t seed)
 {
     size_t iteraciones = 10;
-    std::vector<int> S = generar_solucion_aleatoria(X.size(), clusters.size());
-    std::vector<int> mejor_S = busqueda_local(S, X, R, clusters, lambda, max_evaluaciones/iteraciones, seed);
+    std::vector<int> S = busqueda_local(generar_solucion_aleatoria(X.size(), clusters.size()), X, R, clusters, lambda, max_evaluaciones/iteraciones, seed);
+    std::vector<int> mejor_S = S;
     double f, mejor_f = DBL_MAX;
     for (size_t ev = max_evaluaciones/iteraciones; ev < max_evaluaciones; ev += max_evaluaciones/iteraciones) {
         mutacion_ils(S, 0.1*S.size(), clusters.size());

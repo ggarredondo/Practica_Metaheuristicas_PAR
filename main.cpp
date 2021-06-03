@@ -56,7 +56,7 @@ int main(int argc, char *argv[])
     }
     // inicializar parámetros y leer argumentos
     std::string set = argv[1], X_file, R_file;
-    size_t k, res = std::stoi(argv[2]), seed = std::stoi(argv[3]);
+    size_t k, res = std::stoi(argv[2]), seed = time(NULL);
     srand(seed);
     if (preparar_datos(set, res, X_file, R_file, k))
         std::cout << "Formato correcto.\n" << std::endl;
@@ -90,6 +90,12 @@ int main(int argc, char *argv[])
     C = busqueda_local(generar_solucion_aleatoria(n, k), X, Rlista, clusters, lambda, max_evaluaciones, seed);
     end_time = std::chrono::system_clock::now();
     mostrar_resultados("Búsqueda local", fitness(C, X, Rlista, clusters, lambda), total_infeasibility(C, Rlista), desviacion_general(C, X, clusters), std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count());
+
+    // Ejecución de enfriamiento simulado
+    start_time = std::chrono::system_clock::now();
+    C = enfriamiento_simulado(X, Rlista, clusters, lambda, seed);
+    end_time = std::chrono::system_clock::now();
+    mostrar_resultados("Enfriamiento simulado", fitness(C, X, Rlista, clusters, lambda), total_infeasibility(C, Rlista), desviacion_general(C, X, clusters), std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count());
 
     // Ejecución de búsqueda multiarranque básica
     start_time = std::chrono::system_clock::now();
