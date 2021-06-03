@@ -213,10 +213,10 @@ std::vector<int> enfriamiento_simulado(const std::vector<int>& ini, const double
 std::vector<int> BMB(const double_matrix& X, const R_list& R, std::vector<cluster>& clusters, double lambda, size_t seed)
 {
     std::vector<int> S, mejor_S;
-    size_t iteraciones = 10;
+    size_t iteraciones = 10, n = X.size(), k = clusters.size(), incr = max_evaluaciones/iteraciones;
     double f, mejor_f = DBL_MAX;
-    for (size_t ev = 0; ev < max_evaluaciones; ev += max_evaluaciones/iteraciones) {
-        S = busqueda_local(generar_solucion_aleatoria(X.size(), clusters.size()), X, R, clusters, lambda, max_evaluaciones/iteraciones, seed+ev);
+    for (size_t ev = 0; ev < max_evaluaciones; ev += incr) {
+        S = busqueda_local(generar_solucion_aleatoria(n, k), X, R, clusters, lambda, incr, seed);
         f = fitness(S, X, R, clusters, lambda);
         if (f < mejor_f) {
             mejor_S = S;
@@ -235,13 +235,13 @@ void mutacion_ils(std::vector<int>& S, size_t tam, size_t k) {
 
 std::vector<int> ILS(const double_matrix& X, const R_list& R, std::vector<cluster>& clusters, double lambda, size_t seed)
 {
-    size_t iteraciones = 10;
-    std::vector<int> S = busqueda_local(generar_solucion_aleatoria(X.size(), clusters.size()), X, R, clusters, lambda, max_evaluaciones/iteraciones, seed);
+    size_t iteraciones = 10, incr = max_evaluaciones/iteraciones, n = X.size(), k = clusters.size();
+    std::vector<int> S = busqueda_local(generar_solucion_aleatoria(n, k), X, R, clusters, lambda, incr, seed);
     std::vector<int> mejor_S = S;
     double f, mejor_f = DBL_MAX;
-    for (size_t ev = max_evaluaciones/iteraciones; ev < max_evaluaciones; ev += max_evaluaciones/iteraciones) {
-        mutacion_ils(S, 0.1*S.size(), clusters.size());
-        S = busqueda_local(S, X, R, clusters, lambda, max_evaluaciones/iteraciones, seed+ev);
+    for (size_t ev = max_evaluaciones/iteraciones; ev < max_evaluaciones; ev += incr) {
+        mutacion_ils(S, 0.1*n, k);
+        S = busqueda_local(S, X, R, clusters, lambda, incr, seed);
         f = fitness(S, X, R, clusters, lambda);
         if (f < mejor_f) {
             mejor_S = S;
@@ -253,13 +253,13 @@ std::vector<int> ILS(const double_matrix& X, const R_list& R, std::vector<cluste
 
 std::vector<int> ILS_ES(const double_matrix& X, const R_list& R, std::vector<cluster>& clusters, double lambda, size_t seed)
 {
-    size_t iteraciones = 10;
-    std::vector<int> S = enfriamiento_simulado(generar_solucion_aleatoria(X.size(), clusters.size()), X, R, clusters, lambda, max_evaluaciones/iteraciones, seed);
+    size_t iteraciones = 10, incr = max_evaluaciones/iteraciones, n = X.size(), k = clusters.size();
+    std::vector<int> S = enfriamiento_simulado(generar_solucion_aleatoria(n, k), X, R, clusters, lambda, incr, seed);
     std::vector<int> mejor_S = S;
     double f, mejor_f = DBL_MAX;
-    for (size_t ev = max_evaluaciones/iteraciones; ev < max_evaluaciones; ev += max_evaluaciones/iteraciones) {
-        mutacion_ils(S, 0.1*S.size(), clusters.size());
-        S = enfriamiento_simulado(S, X, R, clusters, lambda, max_evaluaciones/iteraciones, seed+ev);
+    for (size_t ev = max_evaluaciones/iteraciones; ev < max_evaluaciones; ev += incr) {
+        mutacion_ils(S, 0.1*n, k);
+        S = enfriamiento_simulado(S, X, R, clusters, lambda, incr, seed);
         f = fitness(S, X, R, clusters, lambda);
         if (f < mejor_f) {
             mejor_S = S;
