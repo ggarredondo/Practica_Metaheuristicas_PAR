@@ -144,7 +144,7 @@ void mostrar_resultados(const std::string& algoritmo, double fitness, size_t inf
 // bupa seeds: 1618398086, 1618398519, 1618398924, 1618399070, 1618399285
 int main(int argc, char *argv[])
 {
-    results_to_file("zoo", 10);
+    //results_to_file("zoo", 10);
     if (argc != 4) {
         error();
         return -1;
