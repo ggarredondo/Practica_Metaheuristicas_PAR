@@ -30,7 +30,11 @@ bool preparar_datos(const std::string& set, size_t res, std::string& X_file, std
 }
 
 void results_to_file(const std::string& set, size_t res) {
-    std::ofstream file("salida/tabla.csv", std::ios::out | std::ios::trunc);
+    std::string output = "salida/";
+    output.append(set);
+    output.append(std::to_string(res));
+    output.append(".csv");
+    std::ofstream file(output, std::ios::out | std::ios::trunc);
     std::vector<size_t> zoo_seeds = {1618392344, 1618393097, 1618393257, 1618393407, 1618393577};
     std::vector<size_t> glass_seeds = {1618395394, 1618397214, 1618397437, 1618397651, 1618398759};
     std::vector<size_t> bupa_seeds = {1618398086, 1618398519, 1618398924, 1618399070, 1618399285};
