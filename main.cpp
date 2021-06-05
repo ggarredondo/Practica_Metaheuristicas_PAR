@@ -86,22 +86,22 @@ void results_to_file(const std::string& set, size_t res) {
         file << total_infeasibility(C, Rlista) << "," << desviacion_general(C, X, clusters) << "," << fitness(C, X, Rlista, clusters, lambda) << "," << std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count()*0.001 << std::endl;
     }
 
-    file << "ES" << std::endl;
-    for (size_t s = 0; s < n_seeds; ++s) {
-        // Ejecución de enfriamiento simulado
-        srand(chosen[s]);
-        start_time = std::chrono::system_clock::now();
-        C = enfriamiento_simulado(generar_solucion_aleatoria(n, k), X, Rlista, clusters, lambda, max_evaluaciones, chosen[s]);
-        end_time = std::chrono::system_clock::now();
-        file << total_infeasibility(C, Rlista) << "," << desviacion_general(C, X, clusters) << "," << fitness(C, X, Rlista, clusters, lambda) << "," << std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count()*0.001 << std::endl;
-    }
-
     file << "BMB" << std::endl;
     for (size_t s = 0; s < n_seeds; ++s) {
         // Ejecución de búsqueda multiarranque básica
         srand(chosen[s]);
         start_time = std::chrono::system_clock::now();
         C = BMB(X, Rlista, clusters, lambda, chosen[s]);
+        end_time = std::chrono::system_clock::now();
+        file << total_infeasibility(C, Rlista) << "," << desviacion_general(C, X, clusters) << "," << fitness(C, X, Rlista, clusters, lambda) << "," << std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count()*0.001 << std::endl;
+    }
+
+    file << "ES" << std::endl;
+    for (size_t s = 0; s < n_seeds; ++s) {
+        // Ejecución de enfriamiento simulado
+        srand(chosen[s]);
+        start_time = std::chrono::system_clock::now();
+        C = enfriamiento_simulado(generar_solucion_aleatoria(n, k), X, Rlista, clusters, lambda, max_evaluaciones, chosen[s]);
         end_time = std::chrono::system_clock::now();
         file << total_infeasibility(C, Rlista) << "," << desviacion_general(C, X, clusters) << "," << fitness(C, X, Rlista, clusters, lambda) << "," << std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count()*0.001 << std::endl;
     }
@@ -148,9 +148,6 @@ void mostrar_resultados(const std::string& algoritmo, double fitness, size_t inf
 // bupa seeds: 1618398086, 1618398519, 1618398924, 1618399070, 1618399285
 int main(int argc, char *argv[])
 {
-    //results_to_file("bupa", 20);
-    //std::cout << "finished" << std::endl;
-    //return 0;
     if (argc != 4) {
         error();
         return -1;
